@@ -1,0 +1,27 @@
+{
+  "name": "tebas-sphinx-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --outDir dist",
+    "build:watch": "tsc -w --outDir dist",
+    "execute": "node dist/main.js",
+    "execute:watch": "forever -w --minUptime 1000 --spinSleepTime 1000 dist/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^1.17.0",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "@types/express": "^4.16.1",
+    "@types/websocket": "0.0.40",
+    "express": "^4.16.4",
+    "forever": "^1.0.0",
+    "websocket": "^1.0.28"
+  }
+}
