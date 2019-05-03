@@ -1,4 +1,5 @@
 import { Server as HttpServer, createServer } from 'http'
+import { join } from 'path'
 import { server as WsServer, IStringified, connection } from 'websocket'
 import * as express from 'express'
 import { getInterfaces } from './utils'
@@ -20,6 +21,7 @@ export class Server {
   constructor(config: IServerConfig = { port: 5000 }) {
     this.port = config.port
     this.expressServer = express()
+    this.expressServer.use(express.static(join(__dirname, 'public')))
     this.keys = config.keys
     console.error(
       `\nValid room creation keys:\n\t· ${this.keys.join(`\n\t· `)}\n`
