@@ -14,7 +14,6 @@ export const definitions = [
     path: '/rooms',
     action(req: Request, res: Response) {
       const rooms = Object.keys(this.rooms).reduce((acc: any, roomName) => {
-        console.log(this.rooms[roomName])
         acc[roomName] = this.rooms[roomName].map((room: any) => room.name)
         return acc
       }, {})

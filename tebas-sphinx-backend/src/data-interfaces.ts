@@ -9,11 +9,13 @@ export interface IRequestAction {
 export interface IServerConfig {
   port: number
   pathsManager?: PathsManager
+  keys?: Array<string>
 }
 
 export interface ISubscription {
   room: string
   name: string
+  password: string
 }
 
 export interface IUpdate extends ISubscription {

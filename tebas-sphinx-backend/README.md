@@ -32,5 +32,5 @@ try {
 // subscribe to room
 connection.send(JSON.stringify({type:'subscribe', body:{room:'001', name: 'user 1'}}))
 // update code in a room
-connection.send(JSON.stringify({type:'update', body:{html: '', css: '', javascript: ''}}))
+connection.send(JSON.stringify({type:'update', body:{html: '<a>hello</a>', css: '.a { color:red; }', javascript: 'console.log(1)', room:'001'}}))
 ```
