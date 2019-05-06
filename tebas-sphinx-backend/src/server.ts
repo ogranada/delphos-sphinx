@@ -1,5 +1,8 @@
 import { Server as HttpServer, createServer } from 'http'
 import { join } from 'path'
+import { tmpdir } from 'os'
+import { existsSync, mkdirSync } from 'fs'
+import { spawn } from 'child_process'
 import { server as WsServer, IStringified, connection } from 'websocket'
 import * as express from 'express'
 import { getInterfaces } from './utils'
@@ -8,7 +11,10 @@ import {
   ISubscription,
   IUpdate,
   IRoomDefinition,
+  IBackendScripts,
+  IScriptFile,
 } from 'data-interfaces'
+import { writeFileSync } from 'fs';
 
 export class Server {
   port: number
@@ -82,6 +88,55 @@ export class Server {
                 message: 'room created successfuly',
               })
             )
+          } else if (parsedMessage.type === 'run_in_be') {
+            const room: string = parsedMessage.body.room
+            const password: string = parsedMessage.body.password
+            const _room: any = (me.rooms_info as any)[room]
+            if (!room || !_room) {
+              return connection.send(
+                JSON.stringify({
+                  type: parsedMessage.type,
+                  status: 'fail',
+                  message: 'Invalid room name',
+                })
+              )
+            }
+            const beMessage: IBackendScripts = parsedMessage.body
+            let strout: string = ''
+            let strerr: string = ''
+            const baseDir: string = join(tmpdir(), `execution_${beMessage.room}`);
+            if (!existsSync(baseDir)){
+                mkdirSync(baseDir);
+            }
+            beMessage.files.forEach((file:IScriptFile) =>{
+              writeFileSync(join(baseDir, file.path), file.content);
+            })
+            const executionProcess = spawn(`node`, [beMessage.main], {
+              cwd: baseDir
+            });
+            
+            executionProcess.stdout.on('data', (data) => {
+              strout += `${data}`
+            });
+            
+            executionProcess.stderr.on('data', (data) => {
+              strerr += `${data}`
+            });
+
+            executionProcess.on('close', (code:number) => {
+              connection.send(
+                JSON.stringify({
+                  type: parsedMessage.type,
+                  status: code!=0?'fail':'success',
+                  message: `child process exited with code ${code}`,
+                  stdio: {
+                    out: strout,
+                    err: strerr
+                  }
+                })
+              )
+            });
+
           } else if (parsedMessage.type === 'subscribe') {
             const room: string = parsedMessage.body.room
             const password: string = parsedMessage.body.password

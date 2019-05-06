@@ -24,6 +24,19 @@ export interface ISubscription {
   password: string
 }
 
+export interface IScriptFile {
+  content: string
+  path: string
+}
+
+export interface IBackendScripts {
+  room: string
+  name: string
+  password: string
+  files: Array<IScriptFile>
+  main: string
+}
+
 export interface IUpdate extends ISubscription {
   html: string
   css: string

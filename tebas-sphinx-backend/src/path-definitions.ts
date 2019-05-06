@@ -4,6 +4,7 @@ import { join } from 'path'
 
 let PUBLIC_PATH = join(__dirname, 'public')
 if (process.env.ENV && process.env.ENV.toLowerCase() === 'development') {
+  console.log('Running with environment', process.env.ENV);
   PUBLIC_PATH = join(process.cwd(), 'public')
 }
 

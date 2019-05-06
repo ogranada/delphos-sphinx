@@ -23,6 +23,7 @@
     "@types/websocket": "0.0.40",
     "express": "^4.16.4",
     "forever": "^1.0.0",
+    "memfs": "^2.15.2",
     "websocket": "^1.0.28"
   }
 }

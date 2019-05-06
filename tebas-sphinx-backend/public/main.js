@@ -31,6 +31,15 @@
 
   function prepareHandlers() {
     document
+      .querySelector('#resetConnection')
+      .addEventListener('click', event => {
+        if (window.wsConnection) {
+          window.wsConnection.close()
+        }
+        prepareWebSocket()
+      })
+
+    document
       .querySelector('.btnCreateRoom')
       .addEventListener('click', event => {
         // event.target.setAttribute('disabled', true)
@@ -47,6 +56,7 @@
           })
         )
       })
+
     document.querySelector('.btnSubscribe').addEventListener('click', event => {
       // event.target.setAttribute('disabled', true)
       // document.querySelector('.btnSubscribe').textContent = 'subscribed'

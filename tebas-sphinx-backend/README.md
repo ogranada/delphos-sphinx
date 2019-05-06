@@ -30,7 +30,39 @@ try {
 };
 
 // subscribe to room
-connection.send(JSON.stringify({type:'subscribe', body:{room:'001', name: 'user 1'}}))
+wsConnection.send(
+          JSON.stringify({
+            type: 'create_room',
+            body: {
+              room_name: 'room1',
+              password: 'passwd',
+              key: 'admin',
+            },
+          })
+        )
 // update code in a room
 connection.send(JSON.stringify({type:'update', body:{html: '<a>hello</a>', css: '.a { color:red; }', javascript: 'console.log(1)', room:'001'}}))
+
+// be execution using node
+
+const files = [
+    {
+        content: 'console.log("super file")',
+        path: 'demo.js'
+    }
+]
+
+const saveFiles = {
+  type:'run_in_be',
+  body:{
+    room:'room1', 
+    name: 'oscar', 
+    password: 'x', 
+    files: files,
+    main: 'demo.js'
+  }
+}
+
+wsConnection.send(JSON.stringify(saveFiles))
+
 ```
