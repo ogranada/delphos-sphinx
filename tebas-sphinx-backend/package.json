@@ -8,8 +8,8 @@
     "build": "tsc --outDir dist",
     "build:watch": "tsc -w --outDir dist",
     "prepare-deploy": "npm run build && node -e 'console.log(`web: node main.js`)' > dist/Procfile",
-    "execute": "node dist/main.js",
-    "execute:watch": "forever -w --minUptime 1000 --spinSleepTime 1000 dist/main.js"
+    "execute": "ENV=development node dist/main.js",
+    "execute:watch": "ENV=development forever -w --minUptime 1000 --spinSleepTime 1000 dist/main.js"
   },
   "keywords": [],
   "author": "",

@@ -2,6 +2,11 @@ import { Request, Response } from 'express'
 import { IRequestAction } from 'data-interfaces'
 import { join } from 'path'
 
+let PUBLIC_PATH = join(__dirname, 'public')
+if (process.env.ENV && process.env.ENV.toLowerCase() === 'development') {
+  PUBLIC_PATH = join(process.cwd(), 'public')
+}
+
 export const definitions = [
   {
     method: 'get',
@@ -23,9 +28,16 @@ export const definitions = [
   } as IRequestAction,
   {
     method: 'get',
+    path: '/public/:path',
+    action(req: Request, res: Response) {
+      res.sendFile(join(PUBLIC_PATH, req.params.path))
+    },
+  } as IRequestAction,
+  {
+    method: 'get',
     path: '*',
     action(req: Request, res: Response) {
-      res.sendFile(join(__dirname, 'public', 'index.html'))
+      res.sendFile(join(PUBLIC_PATH, 'index.html'))
     },
   } as IRequestAction,
 ]

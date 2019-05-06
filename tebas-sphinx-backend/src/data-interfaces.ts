@@ -12,6 +12,12 @@ export interface IServerConfig {
   keys?: Array<string>
 }
 
+export interface IRoomDefinition {
+  room_name: string
+  password: string
+  key: string
+}
+
 export interface ISubscription {
   room: string
   name: string
