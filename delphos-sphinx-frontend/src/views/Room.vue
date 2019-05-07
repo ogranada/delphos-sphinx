@@ -1,17 +1,13 @@
 <template>
   <div class="Room">
     <div class="Room-editors">
-      <monaco-editor
-        :on-update="updateHTML"
-        language="html"
-        code="<div class='sample'> Hello <div>"
-      ></monaco-editor>
-      <monaco-editor :on-update="updateCSS" language="css" code=".sample { color: purple;}"></monaco-editor>
+      <monaco-editor :on-update="updateHTML" language="html" :code="this.html"></monaco-editor>
+      <monaco-editor :on-update="updateCSS" language="css" :code="this.css"></monaco-editor>
       <monaco-editor
         :on-initialized="onInitialized"
         :on-updates="updateJavascript"
         language="javascript"
-        code="console.log('OK');"
+        :code="this.js"
       ></monaco-editor>
     </div>
     <div class="Room-feedback">
@@ -28,17 +24,38 @@ import CodePreviewer from "@/components/CodePreviewer.vue";
 
 export default {
   name: "Room",
+  data() {
+    return {
+      room: null,
+      html: `<div class="sample">
+  Hello
+</div>`,
+      css: `.sample {
+  color: purple;
+}`,
+      js: `function main(){
+  console.log(1)
+}
+main();`
+    };
+  },
   components: {
     MonacoEditor,
     CodePreviewer
   },
   mounted() {
-    console.log(this.$route.params);
+    this.room = this.$route.params.room;
     if (window.wsConnection) {
+      window.wsConnection.answers.on("update", info => {
+        this.$set(this, 'html', info.html);
+        this.$set(this, 'css', info.css);
+        this.$set(this, 'js', info.js);
+        window.console.log("content updated");
+      });
       window.wsConnection.send(
         JSON.stringify({
           type: "get_room_info",
-          body: { password: window.roomPassword, room: this.$route.params.room }
+          body: { password: window.roomPassword, room: this.room }
         })
       );
     }
@@ -60,6 +77,20 @@ export default {
         if (preview) {
           preview.innerHTML = editor.getValue();
         }
+        if (window.wsConnection) {
+          window.wsConnection.send(
+            JSON.stringify({
+              type: "update",
+              body: {
+                html: editor.getValue(),
+                css: this.css,
+                js: this.js,
+                room: this.room,
+                password: window.roomPassword
+              }
+            })
+          );
+        }
       } catch (error) {
         window.console.log(error);
       }
@@ -69,6 +100,20 @@ export default {
         const styleSheet = document.querySelector("style#css_custom_styles");
         if (styleSheet) {
           styleSheet.innerHTML = editor.getValue();
+        }
+        if (window.wsConnection) {
+          window.wsConnection.send(
+            JSON.stringify({
+              type: "update",
+              body: {
+                html: this.html,
+                css: editor.getValue(),
+                js: this.js,
+                room: this.room,
+                password: window.roomPassword
+              }
+            })
+          );
         }
       } catch (error) {
         window.console.log(error);
@@ -81,6 +126,20 @@ export default {
       }
       window.console.log("call jseval", new Date());
       this.toid = setTimeout(() => {
+        if (window.wsConnection) {
+          window.wsConnection.send(
+            JSON.stringify({
+              type: "update",
+              body: {
+                html: this.html,
+                css: this.css,
+                javascript: editor.getValue(),
+                room: this.room,
+                password: window.roomPassword
+              }
+            })
+          );
+        }
         this.executeJsCode(editor);
       }, 1000);
     },

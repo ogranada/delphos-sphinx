@@ -10,6 +10,10 @@ export function prepareWebSocket() {
     window.console.log("connection opened");
   };
 
+  connection.onclose = function() {
+    window.console.log("Connection closed.");
+  };
+
   connection.onerror = function(error) {
     // an error occurred when sending/receiving data
     window.console.error(error);

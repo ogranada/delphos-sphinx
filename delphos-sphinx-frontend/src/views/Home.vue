@@ -60,15 +60,15 @@ export default {
   mounted() {
     if (window.wsConnection) {
       window.wsConnection.answers.on("create_room", info => {
-        console.log("Room created");
+        window.console.log("Room created");
         this.roomName = '';
         this.roomPassword = '';
         this.roomKey = '';
         alert(info.message);
       });
       window.wsConnection.answers.on("subscribe", info => {
-        console.log("User subscribed");
-        console.log(info);
+        window.console.log("User subscribed");
+        window.console.log(info);
         window.roomName = this.roomName;
         if(info.status === 'fail') {
           return alert(info.message)
@@ -84,7 +84,7 @@ export default {
   methods: {
     createRoom() {
       if (window.wsConnection) {
-        wsConnection.send(
+        window.wsConnection.send(
           JSON.stringify({
             type: "create_room",
             body: {
@@ -95,7 +95,7 @@ export default {
           })
         );
       } else {
-        console.log("WebSocket connection not initialized");
+        window.console.log("WebSocket connection not initialized");
       }
     },
     joinToRoom() {

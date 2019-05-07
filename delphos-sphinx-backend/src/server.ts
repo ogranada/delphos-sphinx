@@ -216,7 +216,8 @@ export class Server {
           } else if (parsedMessage.type === 'update') {
             const room: string = parsedMessage.body.room
             const password: string = parsedMessage.body.password
-            if (!room) {
+            const _room: any = (me.rooms_info as any)[room]
+            if (!room || !_room) {
               return connection.send(
                 JSON.stringify({
                   type: parsedMessage.type,
@@ -246,7 +247,13 @@ export class Server {
             }
             if ((me.rooms as any)[subscription.room]) {
               ;(me.rooms as any)[subscription.room].forEach((room: any) => {
-                room.connection.send(JSON.stringify(parsedMessage.body))
+                room.connection.send(
+                  JSON.stringify({
+                    type: parsedMessage.type,
+                    status: 'success',
+                    ...parsedMessage.body,
+                  })
+                )
               })
             }
           }
