@@ -65,4 +65,7 @@ const saveFiles = {
 
 wsConnection.send(JSON.stringify(saveFiles))
 
+// get_room_info
+wsConnection.send(JSON.stringify({type:'get_room_info', body:{password:'admin',room:'room1'}}))
+
 ```

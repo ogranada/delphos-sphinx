@@ -1,13 +1,13 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export function prepareWebSocket() {
   window.WebSocket = window.WebSocket || window.MozWebSocket;
-  const connection = new WebSocket('ws://127.0.0.1:5000');
+  const connection = new WebSocket("ws://127.0.0.1:5000");
   connection.answers = new EventEmitter();
 
   connection.onopen = function() {
     // connection is opened and ready to use
-    window.console.log('connection opened');
+    window.console.log("connection opened");
   };
 
   connection.onerror = function(error) {
@@ -19,7 +19,7 @@ export function prepareWebSocket() {
     // try to decode json (I assume that each message
     // from server is json)
     try {
-      var json = JSON.parse(message.data);
+      const json = JSON.parse(message.data);
       window.console.log(json);
       connection.answers.emit(json.type, json);
     } catch (e) {

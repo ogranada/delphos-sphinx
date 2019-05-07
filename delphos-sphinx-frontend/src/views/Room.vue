@@ -32,6 +32,17 @@ export default {
     MonacoEditor,
     CodePreviewer
   },
+  mounted() {
+    console.log(this.$route.params);
+    if (window.wsConnection) {
+      window.wsConnection.send(
+        JSON.stringify({
+          type: "get_room_info",
+          body: { password: window.roomPassword, room: this.$route.params.room }
+        })
+      );
+    }
+  },
   methods: {
     onInitialized(lang, editor) {
       if (lang === "javascript") {

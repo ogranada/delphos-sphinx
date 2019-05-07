@@ -14,7 +14,7 @@ import {
   IBackendScripts,
   IScriptFile,
 } from 'data-interfaces'
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'fs'
 
 export class Server {
   port: number
@@ -70,6 +70,11 @@ export class Server {
               )
             }
             const roomDefinition: IRoomDefinition = parsedMessage.body as IRoomDefinition
+            roomDefinition.code = {
+              html: '',
+              css: '',
+              js: '',
+            }
             if ((me.rooms as any)[roomDefinition.room_name]) {
               return connection.send(
                 JSON.stringify({
@@ -104,39 +109,71 @@ export class Server {
             const beMessage: IBackendScripts = parsedMessage.body
             let strout: string = ''
             let strerr: string = ''
-            const baseDir: string = join(tmpdir(), `execution_${beMessage.room}`);
-            if (!existsSync(baseDir)){
-                mkdirSync(baseDir);
+            const baseDir: string = join(
+              tmpdir(),
+              `execution_${beMessage.room}`
+            )
+            if (!existsSync(baseDir)) {
+              mkdirSync(baseDir)
             }
-            beMessage.files.forEach((file:IScriptFile) =>{
-              writeFileSync(join(baseDir, file.path), file.content);
+            beMessage.files.forEach((file: IScriptFile) => {
+              writeFileSync(join(baseDir, file.path), file.content)
             })
             const executionProcess = spawn(`node`, [beMessage.main], {
-              cwd: baseDir
-            });
-            
-            executionProcess.stdout.on('data', (data) => {
-              strout += `${data}`
-            });
-            
-            executionProcess.stderr.on('data', (data) => {
-              strerr += `${data}`
-            });
+              cwd: baseDir,
+            })
 
-            executionProcess.on('close', (code:number) => {
+            executionProcess.stdout.on('data', data => {
+              strout += `${data}`
+            })
+
+            executionProcess.stderr.on('data', data => {
+              strerr += `${data}`
+            })
+
+            executionProcess.on('close', (code: number) => {
               connection.send(
                 JSON.stringify({
                   type: parsedMessage.type,
-                  status: code!=0?'fail':'success',
+                  status: code != 0 ? 'fail' : 'success',
                   message: `child process exited with code ${code}`,
                   stdio: {
                     out: strout,
-                    err: strerr
-                  }
+                    err: strerr,
+                  },
                 })
               )
-            });
-
+            })
+          } else if (parsedMessage.type === 'get_room_info') {
+            const room: string = parsedMessage.body.room
+            const password: string = parsedMessage.body.password
+            const _room: any = (me.rooms_info as any)[room]
+            if (!room || !_room) {
+              return connection.send(
+                JSON.stringify({
+                  type: parsedMessage.type,
+                  status: 'fail',
+                  message: 'Invalid room name',
+                })
+              )
+            }
+            if (_room.password !== password) {
+              return connection.send(
+                JSON.stringify({
+                  type: parsedMessage.type,
+                  status: 'fail',
+                  message: 'Invalid password',
+                })
+              )
+            }
+            connection.send(
+              JSON.stringify({
+                type: parsedMessage.type,
+                status: 'success',
+                message: 'subscribed',
+                room_info: (me.rooms_info as any)[room].code,
+              })
+            )
           } else if (parsedMessage.type === 'subscribe') {
             const room: string = parsedMessage.body.room
             const password: string = parsedMessage.body.password
@@ -172,6 +209,8 @@ export class Server {
                 type: parsedMessage.type,
                 status: 'success',
                 message: 'subscribed',
+                name: subscription.name,
+                room,
               })
             )
           } else if (parsedMessage.type === 'update') {

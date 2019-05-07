@@ -12,10 +12,17 @@ export interface IServerConfig {
   keys?: Array<string>
 }
 
+export interface ICode {
+  html: string
+  css: string
+  js: string
+}
+
 export interface IRoomDefinition {
   room_name: string
   password: string
   key: string
+  code: ICode
 }
 
 export interface ISubscription {
