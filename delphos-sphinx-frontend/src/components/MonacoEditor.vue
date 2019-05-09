@@ -9,8 +9,21 @@ export default {
   props: ['language', 'code', 'onUpdate', 'onInitialized'],
   mounted(){
     this.container = document.querySelector(`.MonacoEditor-container[data-language="${this.language}"]`);
+    this.editor = null;
     this.prepareEditor(this.container);
     this.content = '';
+
+    if (window.wsConnection) {
+      window.wsConnection.answers.on("update", info => {
+        info.javascript = info.js;
+        if(this.editor) {
+          window.console.log("content updated inside editor");
+          const position = this.editor.getPosition()
+          this.editor.setValue(atob(info[this.language]));
+        }
+      });
+    }
+
   },
   methods: {
     prepareEvents() {

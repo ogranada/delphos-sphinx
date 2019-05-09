@@ -13,6 +13,7 @@ import {
   IRoomDefinition,
   IBackendScripts,
   IScriptFile,
+  ICode,
 } from 'data-interfaces'
 import { writeFileSync } from 'fs'
 
@@ -57,7 +58,10 @@ export class Server {
       connection.on('message', message => {
         if (message.type === 'utf8') {
           const parsedMessage = JSON.parse(message.utf8Data)
-          console.log(JSON.stringify(parsedMessage, null, 2))
+          console.log(
+            '\n\nProcessing:\n',
+            JSON.stringify(parsedMessage, null, 2)
+          )
 
           if (parsedMessage.type === 'create_room') {
             if (!me.keys.includes(parsedMessage.body.key)) {
@@ -171,7 +175,7 @@ export class Server {
                 type: parsedMessage.type,
                 status: 'success',
                 message: 'subscribed',
-                room_info: (me.rooms_info as any)[room].code,
+                code: (me.rooms_info as any)[room].code,
               })
             )
           } else if (parsedMessage.type === 'subscribe') {
@@ -236,6 +240,7 @@ export class Server {
               )
             }
             const subscription: IUpdate = parsedMessage.body as IUpdate
+            const name: string = subscription.name
             if (!subscription.room) {
               connection.send(
                 JSON.stringify({
@@ -247,13 +252,21 @@ export class Server {
             }
             if ((me.rooms as any)[subscription.room]) {
               ;(me.rooms as any)[subscription.room].forEach((room: any) => {
-                room.connection.send(
-                  JSON.stringify({
-                    type: parsedMessage.type,
-                    status: 'success',
-                    ...parsedMessage.body,
-                  })
-                )
+                console.log('sending update to', name, room.name)
+                if (name != room.name) {
+                  room.connection.send(
+                    JSON.stringify({
+                      type: parsedMessage.type,
+                      status: 'success',
+                      ...parsedMessage.body,
+                    })
+                  )
+                }
+                ;(me.rooms_info as any)[subscription.room].code = {
+                  html: parsedMessage.body.html,
+                  css: parsedMessage.body.css,
+                  js: parsedMessage.body.js,
+                } as ICode
               })
             }
           }

@@ -4,6 +4,7 @@
       <monaco-editor :on-update="updateHTML" language="html" :code="this.html"></monaco-editor>
       <monaco-editor :on-update="updateCSS" language="css" :code="this.css"></monaco-editor>
       <monaco-editor
+        :on-update="updateJavascript"
         :on-initialized="onInitialized"
         :on-updates="updateJavascript"
         language="javascript"
@@ -45,17 +46,30 @@ main();`
   },
   mounted() {
     this.room = this.$route.params.room;
+    this.username = this.$route.params.username;
+    this.ready_to_update = false;
     if (window.wsConnection) {
       window.wsConnection.answers.on("update", info => {
-        this.$set(this, 'html', info.html);
-        this.$set(this, 'css', info.css);
-        this.$set(this, 'js', info.js);
-        window.console.log("content updated");
+        this.html = atob(info.html);
+        this.css = atob(info.css);
+        this.js = atob(info.js);
+        this.updateHTMLContainer();
+        this.updateCSSStyles();
+      });
+      window.wsConnection.answers.on("get_room_info", info => {
+        this.html = atob(info.code.html) || this.html;
+        this.css = atob(info.code.css) || this.css;
+        this.js = atob(info.code.js) || this.js;
+        this.ready_to_update = true;
       });
       window.wsConnection.send(
         JSON.stringify({
           type: "get_room_info",
-          body: { password: window.roomPassword, room: this.room }
+          body: {
+            password: window.roomPassword,
+            room: this.room,
+            name: this.name
+          }
         })
       );
     }
@@ -71,77 +85,68 @@ main();`
         this.executeJsCode(this.jsEditor);
       }
     },
-    updateHTML(event, editor) {
+    updateHTMLContainer() {
       try {
         const preview = document.querySelector(".CodePreviewer-preview");
         if (preview) {
-          preview.innerHTML = editor.getValue();
+          preview.innerHTML = this.html;
         }
-        if (window.wsConnection) {
-          window.wsConnection.send(
-            JSON.stringify({
-              type: "update",
-              body: {
-                html: editor.getValue(),
-                css: this.css,
-                js: this.js,
-                room: this.room,
-                password: window.roomPassword
-              }
-            })
-          );
-        }
+      } catch (e) {}
+    },
+    updateHTML(event, editor) {
+      try {
+        this.html = editor.getValue();
+        this.updateHTMLContainer();
+        this.updateServerInfo();
       } catch (error) {
         window.console.log(error);
       }
     },
-    updateCSS(event, editor) {
+    updateCSSStyles(event, editor) {
       try {
         const styleSheet = document.querySelector("style#css_custom_styles");
         if (styleSheet) {
-          styleSheet.innerHTML = editor.getValue();
+          styleSheet.innerHTML = this.css;
         }
-        if (window.wsConnection) {
-          window.wsConnection.send(
-            JSON.stringify({
-              type: "update",
-              body: {
-                html: this.html,
-                css: editor.getValue(),
-                js: this.js,
-                room: this.room,
-                password: window.roomPassword
-              }
-            })
-          );
-        }
+      } catch (e) {}
+    },
+    updateCSS(event, editor) {
+      try {
+        this.css = editor.getValue();
+        this.updateCSSStyles();
+        this.updateServerInfo();
       } catch (error) {
         window.console.log(error);
       }
     },
     updateJavascript(event, editor) {
       // JS side
+      this.js = editor.getValue();
       if (this.toid) {
         clearInterval(this.toid);
       }
       window.console.log("call jseval", new Date());
       this.toid = setTimeout(() => {
-        if (window.wsConnection) {
-          window.wsConnection.send(
-            JSON.stringify({
-              type: "update",
-              body: {
-                html: this.html,
-                css: this.css,
-                javascript: editor.getValue(),
-                room: this.room,
-                password: window.roomPassword
-              }
-            })
-          );
-        }
-        this.executeJsCode(editor);
+        this.updateServerInfo();
+        // this.executeJsCode(editor);
       }, 1000);
+    },
+    updateServerInfo() {
+      if (window.wsConnection && this.ready_to_update) {
+        window.wsConnection.send(
+          JSON.stringify({
+            type: "update",
+            body: {
+              html: btoa(this.html),
+              css: btoa(this.css),
+              js: btoa(this.js),
+              room: this.room,
+              name: this.username,
+              password: window.roomPassword
+            }
+          })
+        );
+      }
     },
     executeJsCode(editor) {
       const context = {
