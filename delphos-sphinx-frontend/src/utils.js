@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 export function prepareWebSocket() {
   window.WebSocket = window.WebSocket || window.MozWebSocket;
   const wsAddress = localStorage.getItem('DELPHI_WS_SERVER') ||
-        `${location.protocol.startsWith('https')?'wss':'ws}://${window.location.host}`;
+        `${location.protocol.startsWith('https')?'wss':'ws'}://${window.location.host}`;
   const connection = new WebSocket("ws://127.0.0.1:5000");
   connection.answers = new EventEmitter();
 
