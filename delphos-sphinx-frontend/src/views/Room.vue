@@ -1,8 +1,18 @@
 <template>
   <div class="Room">
     <div class="Room-editors">
-      <monaco-editor :on-update="updateHTML" language="html" :code="this.html"></monaco-editor>
-      <monaco-editor :on-update="updateCSS" language="css" :code="this.css"></monaco-editor>
+      <monaco-editor
+        :on-initialized="onInitialized"
+        :on-update="updateHTML"
+        language="html"
+        :code="this.html"
+      ></monaco-editor>
+      <monaco-editor
+        :on-initialized="onInitialized"
+        :on-update="updateCSS"
+        language="css"
+        :code="this.css"
+      ></monaco-editor>
       <monaco-editor
         :on-update="updateJavascript"
         :on-initialized="onInitialized"
@@ -22,6 +32,7 @@
 // import MonacoEditor from '@/components/MonacoEditor.vue'
 import MonacoEditor from "@/components/MonacoEditor.vue";
 import CodePreviewer from "@/components/CodePreviewer.vue";
+import { wsSubscribe } from "@/utils";
 
 export default {
   name: "Room",
@@ -45,37 +56,53 @@ main();`
     CodePreviewer
   },
   mounted() {
+    this.editors = {};
     this.room = this.$route.params.room;
     this.username = this.$route.params.username;
+    this.roomPassword = localStorage.getItem(`${this.room}:password`);
     this.ready_to_update = false;
-    if (window.wsConnection) {
-      window.wsConnection.answers.on("update", info => {
-        this.html = atob(info.html);
-        this.css = atob(info.css);
-        this.js = atob(info.js);
-        this.updateHTMLContainer();
-        this.updateCSSStyles();
-      });
-      window.wsConnection.answers.on("get_room_info", info => {
-        this.html = atob(info.code.html) || this.html;
-        this.css = atob(info.code.css) || this.css;
-        this.js = atob(info.code.js) || this.js;
-        this.ready_to_update = true;
-      });
-      window.wsConnection.send(
-        JSON.stringify({
-          type: "get_room_info",
-          body: {
-            password: window.roomPassword,
-            room: this.room,
-            name: this.name
-          }
-        })
-      );
-    }
+    this.prepareIntervalId = setInterval(() => {
+      if (window.wsConnection && window.wsConnected) {
+        this.prepareUpdates();
+        clearInterval(this.prepareIntervalId);
+      } else {
+        wsSubscribe(this.room, this.username, this.roomPassword);
+      }
+    }, 800);
   },
   methods: {
+    prepareUpdates() {
+      if (window.wsConnection && window.wsConnected) {
+        window.wsConnection.answers.on("update", info => {
+          this.html = atob(info.html);
+          this.css = atob(info.css);
+          this.js = atob(info.js);
+          // this.updateHTML(null, this.editors["html"]);
+          // this.updateCSS(null, this.editors["css"]);
+          // this.updateJavascript(null, this.editors["js"]);
+        });
+        window.wsConnection.answers.on("get_room_info", info => {
+          this.html = atob(info.code.html) || this.html;
+          this.css = atob(info.code.css) || this.css;
+          this.js = atob(info.code.js) || this.js;
+          this.updateHTMLContainer();
+          this.updateCSSStyles();
+          this.ready_to_update = true;
+        });
+        window.wsConnection.send(
+          JSON.stringify({
+            type: "get_room_info",
+            body: {
+              password: this.roomPassword,
+              room: this.room,
+              name: this.name
+            }
+          })
+        );
+      }
+    },
     onInitialized(lang, editor) {
+      this.editors[lang] = editor;
       if (lang === "javascript") {
         this.jsEditor = editor;
       }
@@ -142,7 +169,7 @@ main();`
               js: btoa(this.js),
               room: this.room,
               name: this.username,
-              password: window.roomPassword
+              password: this.roomPassword
             }
           })
         );
@@ -180,6 +207,7 @@ main();`
 <style lang="scss">
 .Room {
   position: relative;
+  min-height: calc(100vh - 96px);
 
   &-editors,
   &-feedback {

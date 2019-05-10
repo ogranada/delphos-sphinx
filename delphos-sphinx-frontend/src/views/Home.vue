@@ -1,41 +1,64 @@
 <template>
   <div class="Home">
-    <h1>Tebas-Sphinx</h1>
-    <div class="Home-card Home-createRoom">
-      <h2 class="Home-cardTitle">Create room</h2>
-      <div class="Home-container">
-        <label for="roomName">Room Name</label>
-        <input type="text" v-model="roomName" id="roomName" placeholder="MySuperRoom">
-        <label for="roomPassword">Room Password</label>
-        <input
-          type="password"
-          v-model="roomPassword"
-          id="roomPassword"
-          placeholder="simple_password"
-        >
-        <label for="roomKey">Room Key</label>
-        <input type="password" v-model="roomKey" id="roomKey" placeholder="pass_by_sitemgr">
-      </div>
-      <button @click="createRoom">Create Room</button>
-    </div>
+    <md-card md-with-hover>
+      <md-ripple>
+        <md-card-header>
+          <div class="md-title">Create a test room</div>
+          <div class="md-subhead">A great place to have an interview</div>
+        </md-card-header>
 
-    <div class="Home-card Home-createRoom">
-      <h2 class="Home-cardTitle">Join to room</h2>
-      <div class="Home-container">
-        <label for="joinRoomName">Room Name</label>
-        <input type="text" v-model="joinRoomName" id="joinRoomName" placeholder="MySuperRoom">
-        <label for="userName">User Name</label>
-        <input type="text" v-model="userName" id="userName" placeholder="MySuperRoom">
-        <label for="joinRoomPassword">Room Password</label>
-        <input
-          type="password"
-          v-model="joinRoomPassword"
-          id="joinRoomPassword"
-          placeholder="simple_password"
-        >
-      </div>
-      <button @click="joinToRoom">Join to Room</button>
-    </div>
+        <md-card-content>
+          <md-field>
+            <label>Room Name</label>
+            <md-input v-model="roomName"></md-input>
+          </md-field>
+
+          <md-field>
+            <label>Room Password</label>
+            <md-input v-model="roomPassword" type="password"></md-input>
+          </md-field>
+
+          <md-field>
+            <label>Room Key</label>
+            <md-input v-model="roomKey" type="password"></md-input>
+          </md-field>
+        </md-card-content>
+
+        <md-card-actions>
+          <md-button @click="createRoom">Create Room</md-button>
+        </md-card-actions>
+      </md-ripple>
+    </md-card>
+
+    <md-card md-with-hover>
+      <md-ripple>
+        <md-card-header>
+          <div class="md-title">Joint to Room</div>
+          <div class="md-subhead">And show us what you got!</div>
+        </md-card-header>
+
+        <md-card-content>
+          <md-field>
+            <label>Room Name</label>
+            <md-input v-model="joinRoomName"></md-input>
+          </md-field>
+
+          <md-field>
+            <label>User Name</label>
+            <md-input v-model="userName"></md-input>
+          </md-field>
+
+          <md-field>
+            <label>Room Password</label>
+            <md-input v-model="joinRoomPassword" type="password"></md-input>
+          </md-field>
+        </md-card-content>
+
+        <md-card-actions>
+          <md-button @click="joinToRoom">Join To Room</md-button>
+        </md-card-actions>
+      </md-ripple>
+    </md-card>
   </div>
 </template>
 
@@ -61,22 +84,21 @@ export default {
     if (window.wsConnection) {
       window.wsConnection.answers.on("create_room", info => {
         window.console.log("Room created");
-        this.roomName = '';
-        this.roomPassword = '';
-        this.roomKey = '';
+        this.roomName = "";
+        this.roomPassword = "";
+        this.roomKey = "";
         alert(info.message);
       });
       window.wsConnection.answers.on("subscribe", info => {
         window.console.log("User subscribed");
         window.console.log(info);
         window.roomName = this.roomName;
-        if(info.status === 'fail') {
-          return alert(info.message)
+        if (info.status === "fail") {
+          return alert(info.message);
         }
-        window.roomPassword = this.joinRoomPassword
-        this.joinRoomName = '';
-        this.userName = '';
-        this.joinRoomPassword = '';
+        this.joinRoomName = "";
+        this.userName = "";
+        this.joinRoomPassword = "";
         this.$router.push(`/room/${info.room}/${info.name}`);
       });
     }
@@ -99,24 +121,24 @@ export default {
       }
     },
     joinToRoom() {
-      if (window.wsConnection) {
-        window.wsConnection.send(
-          JSON.stringify({
-            type: "subscribe",
-            body: {
-              room: this.joinRoomName,
-              name: this.userName,
-              password: this.joinRoomPassword
-            }
-          })
-        );
-      }
+      this.$store.commit('update_room', this.joinRoomName);
+      this.$store.commit('update_user', this.userName);
+      this.$store.commit('update_password', this.joinRoomPassword);
+      this.$store.dispatch('register');
     }
   }
 };
 </script>
 
 <style lang="scss">
+.md-card {
+  width: 320px;
+  margin: 4px;
+  display: inline-block;
+  vertical-align: top;
+  background-color: #fff;
+}
+
 .Home {
   text-align: center;
 
