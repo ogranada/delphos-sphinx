@@ -4,9 +4,32 @@
 
 <script>
 
+import { mapState } from 'vuex';
+
 export default {
   name: 'MonacoEditor',
   props: ['language', 'code', 'onUpdate', 'onInitialized'],
+  computed: mapState(['html', 'css', 'js']),
+  watch: {
+    html(newVal, oldVal) {
+      if(this.language === 'html') {
+        console.log('changed from', oldVal, 'to', newVal);
+        this.editor.setValue(newVal);
+      }
+    },
+    css(newVal, oldVal) {
+      if(this.language === 'css') {
+        console.log('changed from', oldVal, 'to', newVal);
+        this.editor.setValue(newVal);
+      }
+    },
+    js(newVal, oldVal) {
+      if(this.language === 'js') {
+        console.log('changed from', oldVal, 'to', newVal);
+        this.editor.setValue(newVal);
+      }
+    }
+  },
   mounted(){
     this.container = document.querySelector(`.MonacoEditor-container[data-language="${this.language}"]`);
     this.editor = null;

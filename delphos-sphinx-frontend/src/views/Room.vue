@@ -73,20 +73,7 @@ main();`
   methods: {
     prepareUpdates() {
       if (window.wsConnection && window.wsConnected) {
-        window.wsConnection.answers.on("update", info => {
-          this.html = atob(info.html);
-          this.css = atob(info.css);
-          this.js = atob(info.js);
-          // this.updateHTML(null, this.editors["html"]);
-          // this.updateCSS(null, this.editors["css"]);
-          // this.updateJavascript(null, this.editors["js"]);
-        });
         window.wsConnection.answers.on("get_room_info", info => {
-          this.html = atob(info.code.html) || this.html;
-          this.css = atob(info.code.css) || this.css;
-          this.js = atob(info.code.js) || this.js;
-          this.updateHTMLContainer();
-          this.updateCSSStyles();
           this.ready_to_update = true;
         });
         window.wsConnection.send(
@@ -124,6 +111,8 @@ main();`
       try {
         this.html = editor.getValue();
         this.updateHTMLContainer();
+        console.log('update server info');
+        
         this.updateServerInfo();
       } catch (error) {
         window.console.log(error);
