@@ -49,3 +49,26 @@ export interface IUpdate extends ISubscription {
   css: string
   js: string
 }
+
+///////////////// NEW INTERFACES /////////////////
+
+export enum AnswerStatus {
+  success = 'success',
+  failure = 'failure',
+}
+
+export interface IAnswer {
+  jsonapi: {
+    version: string
+  }
+  data?: Array<any> | Object
+  included?: Array<any> | Object
+  errors?: Array<any> | Object
+}
+
+export interface IRoom {
+  id: string
+  name: string
+  password: string
+  key: string
+}

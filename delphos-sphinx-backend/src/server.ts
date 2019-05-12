@@ -3,8 +3,9 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import { existsSync, mkdirSync } from 'fs'
 import { spawn } from 'child_process'
-import { server as WsServer, IStringified, connection } from 'websocket'
+import { server as WsServer, connection } from 'websocket'
 import * as express from 'express'
+import * as bodyParser from 'body-parser'
 import { getInterfaces } from './utils'
 import {
   IServerConfig,
@@ -29,6 +30,9 @@ export class Server {
   constructor(config: IServerConfig = { port: 5000 }) {
     this.port = config.port
     this.expressServer = express()
+    this.expressServer.use(bodyParser.urlencoded({ extended: false }))
+    this.expressServer.use(bodyParser.json())
+
     this.expressServer.use(express.static(join(__dirname, 'public')))
     this.keys = config.keys
     console.error(
