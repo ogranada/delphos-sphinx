@@ -1,22 +1,31 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
+
+export function getDataServer(websocket) {
+  const storedInfo = localStorage.getItem("DELPHI_WS_SERVER");
+  if (websocket) {
+    return `${
+      location.protocol.startsWith("https") ? "wss" : "ws"
+    }://${storedInfo || window.location.host}`;
+  } else {
+    return `${
+      location.protocol.startsWith("https") ? "https" : "http"
+    }://${storedInfo || window.location.host}`;
+  }
+}
 
 export function prepareWebSocket() {
   window.WebSocket = window.WebSocket || window.MozWebSocket;
-  const wsAddress =
-    localStorage.getItem('DELPHI_WS_SERVER') ||
-    `${location.protocol.startsWith('https') ? 'wss' : 'ws'}://${
-      window.location.host
-    }`;
+  const wsAddress = getDataServer(true);
   const connection = new WebSocket(wsAddress);
   connection.answers = new EventEmitter();
 
   connection.onopen = function() {
     // connection is opened and ready to use
-    window.console.log('connection opened');
+    window.console.log("connection opened");
   };
 
   connection.onclose = function() {
-    window.console.log('Connection closed.');
+    window.console.log("Connection closed.");
   };
 
   connection.onerror = function(error) {
@@ -43,12 +52,12 @@ export function prepareWebSocket() {
 
 export function wsSubscribe(roomName, userName, roomPassword) {
   if (window.wsConnection) {
-    window.wsConnection.answers.on('subscribe', info => {
-      window.wsConnected = info.status === 'success';
+    window.wsConnection.answers.on("subscribe", info => {
+      window.wsConnected = info.status === "success";
     });
     window.wsConnection.send(
       JSON.stringify({
-        type: 'subscribe',
+        type: "subscribe",
         body: {
           room: roomName,
           name: userName,
@@ -56,5 +65,10 @@ export function wsSubscribe(roomName, userName, roomPassword) {
         }
       })
     );
+  } else {
+    prepareWebSocket();
+    setTimeout(() => {
+      wsSubscribe(roomName, userName, roomPassword);
+    }, 1000);
   }
 }

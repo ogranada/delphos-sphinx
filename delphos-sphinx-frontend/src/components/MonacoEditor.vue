@@ -13,19 +13,19 @@ export default {
   watch: {
     html(newVal, oldVal) {
       if(this.language === 'html') {
-        console.log('changed from', oldVal, 'to', newVal);
+        window.console.log('changed from', oldVal, 'to', newVal);
         this.editor.setValue(newVal);
       }
     },
     css(newVal, oldVal) {
       if(this.language === 'css') {
-        console.log('changed from', oldVal, 'to', newVal);
+        window.console.log('changed from', oldVal, 'to', newVal);
         this.editor.setValue(newVal);
       }
     },
     js(newVal, oldVal) {
       if(this.language === 'js') {
-        console.log('changed from', oldVal, 'to', newVal);
+        window.console.log('changed from', oldVal, 'to', newVal);
         this.editor.setValue(newVal);
       }
     }
@@ -41,7 +41,7 @@ export default {
         info.javascript = info.js;
         if(this.editor) {
           window.console.log("content updated inside editor");
-          const position = this.editor.getPosition()
+          // const position = this.editor.getPosition()
           this.editor.setValue(atob(info[this.language]));
         }
       });

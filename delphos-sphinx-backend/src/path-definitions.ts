@@ -24,7 +24,11 @@ export const definitions = [
     method: 'get',
     path: '/api',
     action(req: Request, res: Response) {
-      res.json({ status: 'OK' })
+      res.json(
+        makeJSONAPIAnswer({
+          status: AnswerStatus.success,
+        })
+      )
     },
   } as IRequestAction,
   {
@@ -37,13 +41,24 @@ export const definitions = [
           makeJSONAPIAnswer(undefined, [
             {
               status: AnswerStatus.failure,
-              message: 'missing field',
+              message: `missing field ${
+                !room.name ? 'name' : !room.password ? 'password' : 'key'
+              }`,
+            },
+          ])
+        )
+      }
+      if (!this.keys.includes(room.key)) {
+        return res.status(406).json(
+          makeJSONAPIAnswer(undefined, [
+            {
+              status: AnswerStatus.failure,
+              message: 'Invalid admin key',
             },
           ])
         )
       }
       room.id = uuidv1()
-      console.log(this.rooms)
       const roomsCount: number = Object.keys(this.rooms).reduce(
         (acc: Array<any>, roomId: string) => {
           if (this.rooms[roomId].name == room.name) {
@@ -79,18 +94,14 @@ export const definitions = [
     method: 'get',
     path: '/api/rooms',
     action(req: Request, res: Response) {
-      const rooms = Object.keys(this.rooms).reduce(
-        (acc: any, roomName: string) => {
-          const room: IRoom = this.rooms[roomName]
-          acc[roomName] = {
-            id: room.id,
-            name: room.name,
-          }
-          return acc
-        },
-        {}
-      )
-      res.json({ status: 'OK', rooms })
+      const rooms = Object.keys(this.rooms).map(roomName => {
+        const room: IRoom = this.rooms[roomName]
+        return {
+          id: room.id,
+          name: room.name,
+        }
+      })
+      res.json(makeJSONAPIAnswer({ status: AnswerStatus.success, rooms }))
     },
   } as IRequestAction,
   {
@@ -99,9 +110,19 @@ export const definitions = [
     action(req: Request, res: Response) {
       if (this.rooms[req.params.room_id]) {
         const room: IRoom = this.rooms[req.params.room_id]
-        res.json({ status: 'OK', room: { name: room.name, id: room.id } })
+        res.json(
+          makeJSONAPIAnswer({
+            status: AnswerStatus.success,
+            room: { name: room.name, id: room.id },
+          })
+        )
       }
-      res.json({ status: 'OK', message: 'room does not exists' })
+      res.json(
+        makeJSONAPIAnswer({
+          status: AnswerStatus.failure,
+          message: 'room does not exists',
+        })
+      )
     },
   } as IRequestAction,
   {
@@ -110,9 +131,14 @@ export const definitions = [
     action(req: Request, res: Response) {
       if (this.rooms[req.params.room_id]) {
         delete this.rooms[req.params.room_id]
-        res.json({ status: 'OK' })
+        res.json(makeJSONAPIAnswer({ status: AnswerStatus.success }))
       }
-      res.json({ status: 'OK', message: 'room does not exists' })
+      return res.json(
+        makeJSONAPIAnswer({
+          status: AnswerStatus.failure,
+          message: 'room does not exists',
+        })
+      )
     },
   } as IRequestAction,
   {

@@ -1,4 +1,5 @@
 import { PathsManager } from 'paths-manager'
+import { connection } from 'websocket'
 
 export interface IRequestAction {
   path: string
@@ -71,4 +72,9 @@ export interface IRoom {
   name: string
   password: string
   key: string
+}
+
+export interface IRoomConnectionContaner {
+  room: IRoom
+  connections: Array<connection>
 }

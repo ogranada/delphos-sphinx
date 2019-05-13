@@ -1,7 +1,7 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
-import { wsSubscribe } from '@/utils';
+import { wsSubscribe } from "@/utils";
 
 Vue.use(Vuex);
 
@@ -10,9 +10,9 @@ export const store = new Vuex.Store({
     room: null,
     user: null,
     password: null,
-    html: '',
-    css: '',
-    js: ''
+    html: "",
+    css: "",
+    js: ""
   },
   getters: {
     password(state) {
@@ -42,6 +42,11 @@ export const store = new Vuex.Store({
   },
   actions: {
     register(context) {
+      window.console.log("registering", {
+        room: context.state.room,
+        user: context.state.user,
+        password: context.state.password
+      });
       wsSubscribe(
         context.state.room,
         context.state.user,

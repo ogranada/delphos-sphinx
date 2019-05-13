@@ -39,8 +39,14 @@
 
         <md-card-content>
           <md-field>
-            <label>Room Name</label>
-            <md-input v-model="joinRoomName"></md-input>
+            <md-select
+              v-model="joinRoomName"
+              name="joinRoomName"
+              id="joinRoomName"
+              placeholder="Room Name"
+            >
+              <md-option v-for="room in this.rooms" :key="room.id" :value="room.id">{{room.name}}</md-option>
+            </md-select>
           </md-field>
 
           <md-field>
@@ -59,6 +65,16 @@
         </md-card-actions>
       </md-ripple>
     </md-card>
+
+    <md-snackbar
+      md-position="center"
+      :md-duration="5000"
+      :md-active.sync="showSnackbar"
+      md-persistent
+    >
+      <span>{{ snackbarMessage }}</span>
+      <md-button class="md-accent" @click="showSnackbar = false">close</md-button>
+    </md-snackbar>
   </div>
 </template>
 
@@ -66,29 +82,28 @@
 // @ is an alias to /src
 // import MonacoEditor from '@/components/MonacoEditor.vue'
 
+import "whatwg-fetch";
+import { getDataServer } from "@/utils.js";
+
 export default {
   name: "home",
   data() {
     return {
+      rooms: [],
+      showSnackbar: false,
       userName: "",
       roomName: "",
       roomPassword: "",
       roomKey: "",
       joinRoomName: "",
       joinRoomPassword: "",
-      joinRoomKey: ""
+      joinRoomKey: "",
+      snackbarMessage: ""
     };
   },
   components: {},
   mounted() {
     if (window.wsConnection) {
-      window.wsConnection.answers.on("create_room", info => {
-        window.console.log("Room created");
-        this.roomName = "";
-        this.roomPassword = "";
-        this.roomKey = "";
-        alert(info.message);
-      });
       window.wsConnection.answers.on("subscribe", info => {
         window.console.log("User subscribed");
         window.console.log(info);
@@ -102,29 +117,51 @@ export default {
         this.$router.push(`/room/${info.room}/${info.name}`);
       });
     }
+    this.loadRooms();
   },
   methods: {
-    createRoom() {
-      if (window.wsConnection) {
-        window.wsConnection.send(
-          JSON.stringify({
-            type: "create_room",
-            body: {
-              room_name: this.roomName,
-              password: this.roomPassword,
-              key: this.roomKey
-            }
+    async loadRooms() {
+      const response = await fetch(`${getDataServer()}/api/rooms`)
+      if (response.status == 200) {
+        const json = await response.json();
+        this.rooms = json.data.rooms;
+      }
+    },
+    async createRoom() {
+      try {
+        const response = await fetch(`${getDataServer()}/api/rooms`, {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          },
+          body: JSON.stringify({
+            name: this.roomName,
+            password: this.roomPassword,
+            key: this.roomKey
           })
-        );
-      } else {
-        window.console.log("WebSocket connection not initialized");
+        });
+        const json = await response.json();
+        if (response.status == 200) {
+          await this.loadRooms()
+          this.roomName = '';
+          this.roomPassword = '';
+          this.roomKey = '';
+          this.$set(this, "showSnackbar", true);
+          this.$set(this, "snackbarMessage", `Room ${json.data.room.name} created`);
+        } else {
+          this.$set(this, "showSnackbar", true);
+          this.$set(this, "snackbarMessage", json.errors[0].message);
+        }
+      } catch (error) {
+        this.$set(this, "showSnackbar", true);
+        this.$set(this, "snackbarMessage", error.message);
       }
     },
     joinToRoom() {
-      this.$store.commit('update_room', this.joinRoomName);
-      this.$store.commit('update_user', this.userName);
-      this.$store.commit('update_password', this.joinRoomPassword);
-      this.$store.dispatch('register');
+      this.$store.commit("update_room", this.joinRoomName);
+      this.$store.commit("update_user", this.userName);
+      this.$store.commit("update_password", this.joinRoomPassword);
+      this.$store.dispatch("register");
     }
   }
 };
