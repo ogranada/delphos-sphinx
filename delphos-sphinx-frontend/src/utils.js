@@ -50,25 +50,27 @@ export function prepareWebSocket() {
   window.wsConnection = connection;
 }
 
-export function wsSubscribe(roomName, userName, roomPassword) {
+export function wsSubscribe(room, userName, roomPassword) {
   if (window.wsConnection) {
+    window.console.log("send connection request");
     window.wsConnection.answers.on("subscribe", info => {
-      window.wsConnected = info.status === "success";
+      window.console.log(info);
     });
     window.wsConnection.send(
       JSON.stringify({
         type: "subscribe",
-        body: {
-          room: roomName,
+        room: room,
+        payload: {
           name: userName,
           password: roomPassword
         }
       })
     );
   } else {
+    window.console.log("not connected");
     prepareWebSocket();
     setTimeout(() => {
-      wsSubscribe(roomName, userName, roomPassword);
+      wsSubscribe(room, userName, roomPassword);
     }, 1000);
   }
 }

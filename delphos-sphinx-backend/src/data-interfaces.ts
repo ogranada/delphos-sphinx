@@ -76,11 +76,17 @@ export interface IRoom {
 
 export interface IRoomConnectionContaner {
   room: IRoom
-  connections: Array<connection>
+  connections: Array<ICustomer>
+}
+
+export interface ICustomer {
+  id: string
+  name: string
+  connection: connection
 }
 
 export interface IMessage {
   type: string
   room: string
-  extra: any
+  payload: any
 }

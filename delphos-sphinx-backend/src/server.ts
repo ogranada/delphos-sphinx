@@ -61,8 +61,7 @@ export class Server {
       // all messages from users here.
       connection.on('message', message => {
         console.log('processing ws message')
-
-        this.messageProcessor.process(message)
+        this.messageProcessor.process(connection, message)
       })
 
       connection.on('close', function(connection) {
