@@ -78,3 +78,9 @@ export interface IRoomConnectionContaner {
   room: IRoom
   connections: Array<connection>
 }
+
+export interface IMessage {
+  type: string
+  room: string
+  extra: any
+}

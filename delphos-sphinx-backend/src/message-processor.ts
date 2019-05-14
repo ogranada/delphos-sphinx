@@ -1,5 +1,5 @@
 import { Server } from './server'
-import { IRoomConnectionContaner } from 'data-interfaces'
+import { IRoomConnectionContaner, IMessage } from './data-interfaces'
 import { connection } from 'websocket'
 
 export class MessageProcessor {
@@ -10,11 +10,16 @@ export class MessageProcessor {
     this.roomConnections = []
   }
 
-  process(message: any) {
+  process (message: any) {
     if (message.type === 'utf8') {
-      const parsedMessage = JSON.parse(message.utf8Data)
+      const parsedMessage: IMessage = JSON.parse(message.utf8Data)
       console.log('\n\nProcessing:\n', JSON.stringify(parsedMessage, null, 2))
-      console.log(this.server.rooms)
+      console.log('->', this);
+      switch(parsedMessage.type) {
+        case 'subscribe':
+          // this.subscribe(parse)
+          break;
+      }
     }
   }
 
