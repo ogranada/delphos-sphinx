@@ -2,7 +2,7 @@
   <div class="CodePreviewer">
     <div class="CodePreviewer-actions">
       <div class="CodePreviewer-title">Actions</div>
-      <button @click="runCode">Run</button>
+      <md-button class="md-raised md-primary" @click="runCode">Execute code</md-button>
     </div>
     <div class="CodePreviewer-previewContainer">
       <div class="CodePreviewer-title">Preview</div>
