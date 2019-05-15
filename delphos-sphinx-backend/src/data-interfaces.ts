@@ -13,12 +13,6 @@ export interface IServerConfig {
   keys?: Array<string>
 }
 
-export interface ICode {
-  html: string
-  css: string
-  js: string
-}
-
 export interface IRoomDefinition {
   room_name: string
   password: string
@@ -67,15 +61,18 @@ export interface IAnswer {
   errors?: Array<any> | Object
 }
 
+export interface ICode {
+  html: string
+  css: string
+  js: string
+}
+
 export interface IRoom {
   id: string
   name: string
   password: string
   key: string
-}
-
-export interface IRoomConnectionContaner {
-  room: IRoom
+  code: ICode
   connections: Array<ICustomer>
 }
 

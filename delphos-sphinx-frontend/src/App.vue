@@ -18,28 +18,42 @@
 
 <script>
 
+import { reconnect } from "@/utils";
+
 export default {
   name: "App",
   mounted() {
-    if (window.wsConnection) {
-      window.wsConnection.answers.on("update", info => {
-        this.$store.commit('update_html', atob(info.html));
-        this.$store.commit('update_css', atob(info.css));
-        this.$store.commit('update_js', atob(info.js));
-      });
-      window.wsConnection.answers.on("get_room_info",   info => {
-        this.$store.commit('update_html', atob(info.code.html));
-        this.$store.commit('update_css', atob(info.code.css));
-        this.$store.commit('update_js', atob(info.code.js));
-      });
-      // window.wsConnection.answers.on("get_room_info", info => {
-      //   this.html = atob(info.code.html) || this.html;
-      //   this.css = atob(info.code.css) || this.css;
-      //   this.js = atob(info.code.js) || this.js;
-      //   this.updateHTMLContainer();
-      //   this.updateCSSStyles();
-      //   this.ready_to_update = true;
-      // });
+    if(!this.$store.state.html) {
+      this.$store.commit('update_html', `<div class="sample">
+  Hello
+</div>`);
+      this.$store.commit('update_css', `.sample {
+  color: purple;
+}`);
+      this.$store.commit('update_js', `function main(){
+  console.log(1)
+}
+main();
+`);
+    }
+    if (this.$route.name == 'Room') {
+      const room = this.$route.params.room;
+      const userInfo = this.$store.getters.userInfo;
+      const username = userInfo.name;
+      const id = userInfo.id;
+      this.$store.commit('update_room', room)
+      const password = this.$store.getters.password;
+      const reconnection = reconnect(room, id, username, password);
+      reconnection
+        .then(answer => {
+          localStorage.setItem('USER_INFO', JSON.stringify(answer.payload.user));
+          this.$store.commit('update_html', answer.payload.code.html);
+          this.$store.commit('update_css', answer.payload.code.css);
+          this.$store.commit('update_js', answer.payload.code.js);
+        })
+        .catch(answer => {
+          this.$router.push('/');
+        })
     }
   }
 };
@@ -50,5 +64,6 @@ export default {
 body {
   margin: 0;
   padding: 0;
+  background: white;
 }
 </style>

@@ -4,7 +4,7 @@
       <md-ripple>
         <md-card-header>
           <div class="md-title">Create a test room</div>
-          <div class="md-subhead">A great place to have an interview</div>
+          <div class="md-subhead">A great place to take an interview</div>
         </md-card-header>
 
         <md-card-content>
@@ -25,7 +25,7 @@
         </md-card-content>
 
         <md-card-actions>
-          <md-button @click="createRoom">Create Room</md-button>
+          <md-button @click="createRoom" :disabled="disableCreate">Create Room</md-button>
         </md-card-actions>
       </md-ripple>
     </md-card>
@@ -61,7 +61,7 @@
         </md-card-content>
 
         <md-card-actions>
-          <md-button @click="joinToRoom">Join To Room</md-button>
+          <md-button @click="joinToRoom" :disabled="disableJoin">Join To Room</md-button>
         </md-card-actions>
       </md-ripple>
     </md-card>
@@ -98,25 +98,13 @@ export default {
       joinRoomName: "",
       joinRoomPassword: "",
       joinRoomKey: "",
-      snackbarMessage: ""
+      snackbarMessage: "",
+      disableJoin: false,
+      disableCreate: false
     };
   },
   components: {},
   mounted() {
-    if (window.wsConnection) {
-      window.wsConnection.answers.on("subscribe", info => {
-        window.console.log("User subscribed");
-        window.console.log(info);
-        window.roomName = this.roomName;
-        if (info.status === "fail") {
-          return alert(info.message);
-        }
-        this.joinRoomName = "";
-        this.userName = "";
-        this.joinRoomPassword = "";
-        this.$router.push(`/room/${info.room}/${info.name}`);
-      });
-    }
     this.loadRooms();
   },
   methods: {
@@ -128,6 +116,7 @@ export default {
       }
     },
     async createRoom() {
+      this.$set(this, "disableCreate", true);
       try {
         const response = await fetch(`${getDataServer()}/api/rooms`, {
           method: "POST",
@@ -146,22 +135,40 @@ export default {
           this.roomName = '';
           this.roomPassword = '';
           this.roomKey = '';
-          this.$set(this, "showSnackbar", true);
           this.$set(this, "snackbarMessage", `Room ${json.data.room.name} created`);
-        } else {
           this.$set(this, "showSnackbar", true);
+        } else {
           this.$set(this, "snackbarMessage", json.errors[0].message);
+          this.$set(this, "showSnackbar", true);
         }
       } catch (error) {
-        this.$set(this, "showSnackbar", true);
         this.$set(this, "snackbarMessage", error.message);
+        this.$set(this, "showSnackbar", true);
       }
+      this.$set(this, "disableCreate", false);
     },
     joinToRoom() {
+      this.$set(this, "disableJoin", true);
       this.$store.commit("update_room", this.joinRoomName);
       this.$store.commit("update_user", this.userName);
       this.$store.commit("update_password", this.joinRoomPassword);
-      this.$store.dispatch("register");
+      const pr = this.$store.dispatch("register");
+      pr
+        .then(answer => {
+          localStorage.setItem('USER_INFO', JSON.stringify(answer.payload.user));
+          this.$store.commit('update_html', answer.payload.code.html);
+          this.$store.commit('update_css', answer.payload.code.css);
+          this.$store.commit('update_js', answer.payload.code.js);
+          this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);
+          this.$set(this, "showSnackbar", true);
+          this.$set(this, "disableJoin", false);
+        })
+        .catch(answer => {
+          window.console.error('Error subscribing user:', answer);
+          this.$set(this, "snackbarMessage", answer.payload.message);
+          this.$set(this, "showSnackbar", true);
+          this.$set(this, "disableJoin", false);
+        })
     }
   }
 };

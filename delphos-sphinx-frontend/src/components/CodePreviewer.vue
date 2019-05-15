@@ -17,15 +17,44 @@
 
 
 <script>
+
+import { mapState } from 'vuex';
+
 export default {
   name: "CodePreview",
   props: ['executeCode'],
   mounted() {
     this.prepareLog();
   },
+  computed: mapState(...['html', 'css', 'js']),
   methods: {
     runCode() {
-      this.executeCode && this.executeCode();
+      this.updateHTMLContainer(this.$store.state.html);
+      this.updateStyleSheets(this.$store.state.css);
+      this.executeJsCode(this.$store.state.js);
+    },
+    executeJsCode(jsCode) {
+      const context = {
+        console: {
+          log(...args) {
+            window.console.log(...args);
+            window.log(...args);
+          },
+          error(...args) {
+            window.console.error(...args);
+            window.error(...args);
+          }
+        },
+        alert: (...params) => window.alert(...params)
+      };
+      if (this.old_js !== jsCode) {
+        const customFunction = new Function(
+          `with(this) { try { ${jsCode} }catch(error){console.error(error)} } `
+        );
+        document.querySelector(".CodePreviewer-console").innerHTML = "";
+        customFunction.call(context);
+        this.old_js = jsCode;
+      }
     },
     prepareLog() {
       if(window.log) {
@@ -34,15 +63,41 @@ export default {
       const consoleSelector = '.CodePreviewer-console';
       window.log = function() {
         const out = document.createElement("div");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ");
+        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
+          .replace(/\</g, '&lt;')
+          .replace(/\>/g, '&gt;')
+          ;
         document.querySelector(consoleSelector).appendChild(out);
       };
       window.error = function() {
         const out = document.createElement("div");
         out.classList.add("error");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ");
+        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
+          .replace(/\</g, '&lt;')
+          .replace(/\>/g, '&gt;')
+          ;
         document.querySelector(consoleSelector).appendChild(out);
       };
+    },
+    updateHTMLContainer(html) {
+      try {
+        const preview = document.querySelector(".CodePreviewer-preview");
+        if (preview) {
+          preview.innerHTML = html;
+        }
+      } catch (e) {
+        // TODO: check error management
+      }
+    },
+    updateStyleSheets(css) {
+      try {
+        const styleSheet = document.querySelector("style#css_custom_styles");
+        if (styleSheet) {
+          styleSheet.innerHTML = css;
+        }
+      } catch (e) {
+        // TODO: manage exception
+      }
     }
   }
 };

@@ -1,93 +1,80 @@
 <template>
-  <div class="MonacoEditor-container" :data-language="this.language"></div>
+  <div>
+    <div class="MonacoEditor-container" :data-language="this.language"></div>
+  </div>
 </template>
 
 <script>
+/* global monaco */
 
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
 export default {
-  name: 'MonacoEditor',
-  props: ['language', 'code', 'onUpdate', 'onInitialized'],
-  computed: mapState(['html', 'css', 'js']),
+  name: "MonacoEditor",
+  props: ["language"],
+  computed: mapState({
+    code(state) {
+      const lang = this.language == "javascript" ? "js" : this.language;
+      return state[lang];
+    }
+  }),
   watch: {
-    html(newVal, oldVal) {
-      if(this.language === 'html') {
-        window.console.log('changed from', oldVal, 'to', newVal);
-        this.editor.setValue(newVal);
-      }
-    },
-    css(newVal, oldVal) {
-      if(this.language === 'css') {
-        window.console.log('changed from', oldVal, 'to', newVal);
-        this.editor.setValue(newVal);
-      }
-    },
-    js(newVal, oldVal) {
-      if(this.language === 'js') {
-        window.console.log('changed from', oldVal, 'to', newVal);
-        this.editor.setValue(newVal);
+    code(newCode, oldCode) {
+      if(!this.justUpdated) {
+        if (this.editor) {
+          this.editor.setValue(newCode);
+        }
+      } else {
+        this.justUpdated = false;
       }
     }
   },
-  mounted(){
-    this.container = document.querySelector(`.MonacoEditor-container[data-language="${this.language}"]`);
+  mounted() {
+    this.container = document.querySelector(
+      `.MonacoEditor-container[data-language="${this.language}"]`
+    );
     this.editor = null;
     this.prepareEditor(this.container);
-    this.content = '';
-
-    if (window.wsConnection) {
-      window.wsConnection.answers.on("update", info => {
-        info.javascript = info.js;
-        if(this.editor) {
-          window.console.log("content updated inside editor");
-          // const position = this.editor.getPosition()
-          this.editor.setValue(atob(info[this.language]));
-        }
-      });
-    }
-
   },
   methods: {
     prepareEvents() {
       this.editor.onKeyUp(event => {
-        if(this.content !== this.editor.getValue()) {
+        if (this.content !== this.editor.getValue()) {
+          const update_lang = `update_${
+            this.language == "javascript" ? "js" : this.language
+          }`;
           this.content = this.editor.getValue();
-          this.onUpdate && this.onUpdate(event, this.editor);
+          this.justUpdated = true;
+          this.$store.commit(update_lang, this.content);
         }
       });
-      this.onUpdate && this.onUpdate(null, this.editor);
     },
     async prepareMonaco() {
       return new Promise((resolve, reject) => {
         window.require.config({
           paths: {
-            vs: '//cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.15.6/min/vs'
+            vs: "//cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.15.6/min/vs"
           },
           onError: error => reject(error)
         });
-        window.require(['vs/editor/editor.main'], function() {
+        window.require(["vs/editor/editor.main"], function() {
           resolve(monaco);
         });
       });
     },
     async prepareEditor(root) {
       const monaco = await this.prepareMonaco();
-      this.editor = monaco.editor.create(
-        root, {
-          value: this.code,
-          language: this.language || 'javascript'
-        }
-      );
+      this.editor = monaco.editor.create(root, {
+        value: this.code,
+        language: this.language || "javascript"
+      });
       this.prepareEvents();
-      this.onInitialized && this.onInitialized(this.language, this.editor);
     }
   }
-}
+};
 </script>
 
 <style lang="scss">
-
 .MonacoEditor {
   &-container {
     height: 30vh;
@@ -95,7 +82,6 @@ export default {
     margin: 2vh;
   }
 }
-
 </style>
 
 

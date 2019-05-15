@@ -8,9 +8,9 @@ import { getInterfaces } from './utils'
 import { MessageProcessor } from './message-processor'
 import {
   IServerConfig,
+  IRoom,
   ISubscription,
   IUpdate,
-  IRoomDefinition,
   IBackendScripts,
   IScriptFile,
   ICode,
@@ -21,7 +21,8 @@ export class Server {
   server: HttpServer
   webSocketServer: WsServer
   expressServer: express.Express
-  rooms: Object
+  private rooms: Array<any>
+  private roomsById: Map<string, any>
   // rooms_info: Object
   keys: string[]
   messageProcessor: MessageProcessor
@@ -48,19 +49,39 @@ export class Server {
       config.pathsManager.setServer(this)
       config.pathsManager.preparePaths()
     }
-    this.rooms = {}
+    this.rooms = []
+    this.roomsById = new Map();
+  }
+
+  addRoom(room: IRoom) {
+    if (!room.connections) {
+      room.connections = [];
+      room.code = <ICode> {
+        html: '',
+        css: '',
+        js: ''
+      }
+    }
+    global.console.log('Adding room ', room);
+    this.rooms.push(room);
+    this.roomsById.set(room.id, room);
+  }
+
+  getRooms() {
+    return [...this.rooms];
+  }
+
+  getRoomById(id: string) {
+    return this.roomsById.get(id);
   }
 
   prepareWebSocketServer() {
     const me = this
     me.webSocketServer.on('request', request => {
-      console.log(`connection from customer ${request.origin}`)
       const connection: connection = request.accept(null, request.origin)
-
       // This is the most important callback for us, we'll handle
       // all messages from users here.
       connection.on('message', message => {
-        console.log('processing ws message')
         this.messageProcessor.process(connection, message)
       })
 

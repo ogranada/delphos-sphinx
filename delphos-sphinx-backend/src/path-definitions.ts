@@ -78,7 +78,7 @@ export const definitions = [
           ])
         )
       }
-      this.rooms[room.id] = room
+      this.addRoom(room);
       res.json(
         makeJSONAPIAnswer({
           status: AnswerStatus.success,
@@ -94,8 +94,7 @@ export const definitions = [
     method: 'get',
     path: '/api/rooms',
     action(req: Request, res: Response) {
-      const rooms = Object.keys(this.rooms).map(roomName => {
-        const room: IRoom = this.rooms[roomName]
+      const rooms = this.getRooms().map((room:IRoom) => {
         return {
           id: room.id,
           name: room.name,

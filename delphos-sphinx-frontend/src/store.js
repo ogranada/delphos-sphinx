@@ -1,7 +1,7 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-import { wsSubscribe } from "@/utils";
+import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from '@/utils';
 
 Vue.use(Vuex);
 
@@ -10,13 +10,16 @@ export const store = new Vuex.Store({
     room: null,
     user: null,
     password: null,
-    html: "",
-    css: "",
-    js: ""
+    html: '',
+    css: '',
+    js: ''
   },
   getters: {
     password(state) {
       return localStorage.getItem(`${state.room}:password`);
+    },
+    userInfo() {
+      return JSON.parse(localStorage.getItem('USER_INFO'));
     }
   },
   mutations: {
@@ -32,22 +35,20 @@ export const store = new Vuex.Store({
     },
     update_html(state, html) {
       state.html = html;
+      updateHTML(html);
     },
     update_css(state, css) {
       state.css = css;
+      updateCSS(css);
     },
     update_js(state, js) {
       state.js = js;
+      updateJavascript(js);
     }
   },
   actions: {
     register(context) {
-      window.console.log("registering", {
-        room: context.state.room,
-        user: context.state.user,
-        password: context.state.password
-      });
-      wsSubscribe(
+      return wsSubscribe(
         context.state.room,
         context.state.user,
         context.state.password

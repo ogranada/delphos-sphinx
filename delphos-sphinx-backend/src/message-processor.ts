@@ -1,19 +1,15 @@
 import { Server } from './server'
-import { IRoomConnectionContaner, IMessage, ICustomer } from './data-interfaces'
+import { IMessage, ICustomer, IRoom } from './data-interfaces'
 import { v1 as uuidv1 } from 'uuid'
 import { connection } from 'websocket'
 
 export class MessageProcessor {
   server: Server
-  roomConnections: Array<IRoomConnectionContaner>
   constructor(server: Server) {
     this.server = server
-    this.roomConnections = []
   }
 
   process(connection: connection, message: any) {
-    console.log(this.roomConnections)
-
     if (message.type === 'utf8') {
       const parsedMessage: IMessage = JSON.parse(message.utf8Data)
       console.log('\n\nProcessing:\n', JSON.stringify(parsedMessage, null, 2))
@@ -26,37 +22,10 @@ export class MessageProcessor {
   }
 
   subscribe(message: IMessage, connection: connection) {
-    // console.log('-->', message.room)
-    // console.log('-->', this.server.rooms as any)
-    // console.log('-->', (this.server.rooms as any)[message.room])
-
-    const rooms: IRoomConnectionContaner[] = this.roomConnections.filter(
-      (roomConnection: IRoomConnectionContaner) =>
-        roomConnection.room.id == message.room
-    )
-    console.log(1)
-    if (rooms.length > 0) {
-      console.log(2)
-      const room: IRoomConnectionContaner = rooms[0]
-      if (room.room.password === message.payload.password) {
-        console.log(3)
-        room.connections.push(<ICustomer>{
-          id: uuidv1(),
-          name: message.payload.name,
-          connection,
-        })
-        console.log(4)
-        connection.send(<IMessage>{
-          type: message.type,
-          room: message.room,
-          payload: {
-            status: 'success',
-            message: 'subscription successfull',
-            code: 'xxx',
-          },
-        })
-      } else {
-        connection.send(<IMessage>{
+    const targetRoom: IRoom = this.server.getRoomById(message.room)
+    if (targetRoom && targetRoom.password != message.payload.password) {
+      connection.send(
+        JSON.stringify(<IMessage>{
           type: message.type,
           room: message.room,
           payload: {
@@ -64,7 +33,54 @@ export class MessageProcessor {
             message: 'invalid password',
           },
         })
+      )
+      setTimeout(() => {
+        connection.close()
+      }, 1000)
+    } else {
+      const id: string = uuidv1()
+      const name: string = message.payload.name
+      const connContainer: ICustomer = <ICustomer>{
+        id,
+        name,
+        connection,
       }
+      const usersWithName = targetRoom.connections.filter((conn:ICustomer) => conn.name == name);
+      if (usersWithName.length > 0) {
+        if (message.payload.id != usersWithName[0].id) {
+          connection.send(
+            JSON.stringify(<IMessage>{
+              type: message.type,
+              room: message.room,
+              payload: {
+                status: 'failure',
+                message: 'invalid user name',
+              },
+            })
+          )
+          return setTimeout(() => {
+            connection.close()
+          }, 1000);
+        } else {
+          connContainer.id = message.payload.id;
+        }
+      }
+      targetRoom.connections.push(connContainer)
+      connection.send(
+        JSON.stringify(<IMessage>{
+          type: message.type,
+          room: message.room,
+          payload: {
+            status: 'success',
+            message: 'joined to room',
+            user: {
+              id,
+              name
+            },
+            code: targetRoom.code
+          },
+        })
+      )
     }
   }
 }
