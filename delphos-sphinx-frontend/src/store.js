@@ -1,7 +1,7 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
-import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from '@/utils';
+import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from "@/utils";
 
 Vue.use(Vuex);
 
@@ -11,16 +11,16 @@ export const store = new Vuex.Store({
     id: null,
     user: null,
     password: null,
-    html: '',
-    css: '',
-    js: ''
+    html: "",
+    css: "",
+    js: ""
   },
   getters: {
     password(state) {
       return localStorage.getItem(`${state.room}:password`);
     },
     userInfo() {
-      return JSON.parse(localStorage.getItem('USER_INFO'));
+      return JSON.parse(localStorage.getItem("USER_INFO")) || {};
     }
   },
   mutations: {
@@ -38,21 +38,18 @@ export const store = new Vuex.Store({
       state.password = password;
     },
     update_html(state, html) {
-      window.console.log(`"${state.html}" -> "${html}"`);
       if (state.html !== html) {
         state.html = html;
         updateHTML(html, state.room, state.id);
       }
     },
     update_css(state, css) {
-      window.console.log(`"${state.css}" -> "${css}"`);
       if (state.css !== css) {
         state.css = css;
         updateCSS(css, state.room, state.id);
       }
     },
     update_js(state, js) {
-      window.console.log(`"${state.js}" -> "${js}"`);
       if (state.js !== js) {
         state.js = js;
         updateJavascript(js, state.room, state.id);

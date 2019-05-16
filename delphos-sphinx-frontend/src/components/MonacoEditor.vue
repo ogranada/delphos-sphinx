@@ -33,7 +33,7 @@ export default {
     }
   }),
   watch: {
-    code(newCode, oldCode) {
+    code(newCode /*, oldCode */) {
       if (!this.justUpdated) {
         if (this.editor) {
           // const pos = this.editor.getPosition();
@@ -54,7 +54,7 @@ export default {
   },
   methods: {
     prepareEvents() {
-      this.editor.onKeyUp(event => {
+      this.editor.onKeyUp((/*event*/) => {
         if (this.content !== this.editor.getValue()) {
           const update_lang = `update_${
             this.language == "javascript" ? "js" : this.language

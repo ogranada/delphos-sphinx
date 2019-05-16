@@ -28,29 +28,6 @@ export default {
   name: "App",
   mounted() {
     if (!this.$store.state.html) {
-      /*
-      this.$store.commit(
-        "update_html",
-        `<div class="sample">
-  Hello
-</div>`
-      );
-      this.$store.commit(
-        "update_css",
-        `.sample {
-  color: purple;
-}`
-      );
-      this.$store.commit(
-        "update_js",
-        `function main(){
-  console.log(1)
-}
-main();
-  
-`
-      );
-      */
       document.querySelector('body').setAttribute('suggestions-muted', true);
     }
     if (this.$route.name == "Room") {
@@ -80,7 +57,7 @@ main();
           });
         })
         .catch(error => {
-          console.error('Error Re-joining', error)
+          window.console.error('Error Re-joining', error)
           this.goHome();
         });
     }

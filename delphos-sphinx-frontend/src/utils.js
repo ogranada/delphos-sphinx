@@ -1,22 +1,21 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from "events";
 
 export function getDataServer(websocket) {
-  const storedInfo = localStorage.getItem('DELPHI_WS_SERVER');
+  const storedInfo = localStorage.getItem("DELPHI_WS_SERVER");
   if (websocket) {
     return `${
-      location.protocol.startsWith('https') ? 'wss' : 'ws'
+      location.protocol.startsWith("https") ? "wss" : "ws"
     }://${storedInfo || window.location.host}`;
   } else {
     return `${
-      location.protocol.startsWith('https') ? 'https' : 'http'
+      location.protocol.startsWith("https") ? "https" : "http"
     }://${storedInfo || window.location.host}`;
   }
 }
 
 export function prepareListenUpdates(action) {
   if (window.wsConnection) {
-    window.wsConnection.answers.on('update_code', info => {
-      window.console.log(info);
+    window.wsConnection.answers.on("update_code", info => {
       action && action(info);
     });
   }
@@ -31,12 +30,12 @@ export function prepareWebSocket() {
 
     connection.onopen = function() {
       // connection is opened and ready to use
-      window.console.log('Connection opened.');
+      window.console.log("Connection opened.");
       resolve(connection);
     };
 
     connection.onclose = function() {
-      window.console.log('Connection closed.');
+      window.console.log("Connection closed.");
       window.wsConnection = undefined;
       resolve(null);
     };
@@ -45,7 +44,7 @@ export function prepareWebSocket() {
       // an error occurred when sending/receiving data
       window.console.error(error);
       window.wsConnection = undefined;
-      reject(new Error('conection closed'));
+      reject(new Error("conection closed"));
     };
 
     connection.onmessage = function(message) {
@@ -65,15 +64,13 @@ export function prepareWebSocket() {
 }
 
 export function updateHTML(html, room, source) {
-  window.console.log('update html');
   if (window.wsConnection) {
-    window.console.log('start upd');
     window.wsConnection.send(
       JSON.stringify({
-        type: 'update_code',
+        type: "update_code",
         room,
         payload: {
-          language: 'html',
+          language: "html",
           code: btoa(html),
           source
         }
@@ -83,15 +80,13 @@ export function updateHTML(html, room, source) {
 }
 
 export function updateCSS(css, room, source) {
-  window.console.log('update css');
   if (window.wsConnection) {
-    window.console.log('start upd');
     window.wsConnection.send(
       JSON.stringify({
-        type: 'update_code',
+        type: "update_code",
         room,
         payload: {
-          language: 'css',
+          language: "css",
           code: btoa(css),
           source
         }
@@ -101,15 +96,13 @@ export function updateCSS(css, room, source) {
 }
 
 export function updateJavascript(js, room, source) {
-  window.console.log('update js');
   if (window.wsConnection) {
-    window.console.log('start upd');
     window.wsConnection.send(
       JSON.stringify({
-        type: 'update_code',
+        type: "update_code",
         room,
         payload: {
-          language: 'js',
+          language: "js",
           code: btoa(js),
           source
         }
@@ -121,15 +114,15 @@ export function updateJavascript(js, room, source) {
 export function wsSubscribe(room, userName, roomPassword, userId) {
   return new Promise((resolve, reject) => {
     if (window.wsConnection) {
-      window.wsConnection.answers.on('subscribe', info => {
-        if (info.payload.status == 'success') {
+      window.wsConnection.answers.on("subscribe", info => {
+        if (info.payload.status == "success") {
           resolve(info);
         } else {
           reject(info);
         }
       });
       const subsMessage = JSON.stringify({
-        type: 'subscribe',
+        type: "subscribe",
         room: room,
         payload: {
           id: userId,
@@ -137,7 +130,6 @@ export function wsSubscribe(room, userName, roomPassword, userId) {
           password: roomPassword
         }
       });
-      window.console.log('-->', subsMessage);
       window.wsConnection.send(subsMessage);
     } else {
       prepareWebSocket().then(() => {

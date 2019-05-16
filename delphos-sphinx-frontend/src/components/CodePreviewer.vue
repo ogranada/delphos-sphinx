@@ -81,8 +81,8 @@ export default {
       window.log = function() {
         const out = document.createElement("div");
         out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/\</g, '&lt;')
-          .replace(/\>/g, '&gt;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
           ;
         document.querySelector(consoleSelector).appendChild(out);
       };
@@ -90,8 +90,8 @@ export default {
         const out = document.createElement("div");
         out.classList.add("error");
         out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/\</g, '&lt;')
-          .replace(/\>/g, '&gt;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
           ;
         document.querySelector(consoleSelector).appendChild(out);
       };
