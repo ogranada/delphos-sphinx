@@ -83,7 +83,10 @@
 // import MonacoEditor from '@/components/MonacoEditor.vue'
 
 import "whatwg-fetch";
-import { getDataServer } from "@/utils.js";
+import { 
+  getDataServer,
+  prepareListenUpdates
+} from "@/utils.js";
 
 export default {
   name: "home",
@@ -109,7 +112,8 @@ export default {
   },
   methods: {
     async loadRooms() {
-      const response = await fetch(`${getDataServer()}/api/rooms`)
+      const serverUrl = getDataServer();
+      const response = await fetch(`${serverUrl}/api/rooms`)
       if (response.status == 200) {
         const json = await response.json();
         this.rooms = json.data.rooms;
@@ -149,6 +153,7 @@ export default {
     },
     joinToRoom() {
       this.$set(this, "disableJoin", true);
+      this.$store.commit('update_id', this.$store.getters.userInfo.id);
       this.$store.commit("update_room", this.joinRoomName);
       this.$store.commit("update_user", this.userName);
       this.$store.commit("update_password", this.joinRoomPassword);
@@ -156,12 +161,16 @@ export default {
       pr
         .then(answer => {
           localStorage.setItem('USER_INFO', JSON.stringify(answer.payload.user));
-          this.$store.commit('update_html', answer.payload.code.html);
-          this.$store.commit('update_css', answer.payload.code.css);
-          this.$store.commit('update_js', answer.payload.code.js);
-          this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);
-          this.$set(this, "showSnackbar", true);
+          this.$store.commit('update_id', answer.payload.user.id);
+          this.$store.commit('update_user', answer.payload.user.name);
+          this.$store.commit('update_html', atob(answer.payload.code.html));
+          this.$store.commit('update_css', atob(answer.payload.code.css));
+          this.$store.commit('update_js', atob(answer.payload.code.js));
+          prepareListenUpdates((info) => {
+            this.$store.commit(`update_${info.payload.language}`, atob(info.payload.code));
+          });
           this.$set(this, "disableJoin", false);
+          this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);
         })
         .catch(answer => {
           window.console.error('Error subscribing user:', answer);

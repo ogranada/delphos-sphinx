@@ -1,6 +1,17 @@
 <template>
   <div>
-    <div class="MonacoEditor-container" :data-language="this.language"></div>
+    <md-toolbar class="MonacoEditor-header md-dense">
+      <h3 class="md-title">{{this.language}}</h3>
+      <div class="md-toolbar-section-end">
+        <md-button class="md-icon-button" @click="isCollapsed = !isCollapsed">
+          <md-icon v-if="isCollapsed">keyboard_arrow_down</md-icon>
+          <md-icon v-if="!isCollapsed">keyboard_arrow_up</md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <div :class="`MonacoEditor-collapsable ${isCollapsed?'isCollapsed':''}`">
+      <div class="MonacoEditor-container" :data-language="this.language"></div>
+    </div>
   </div>
 </template>
 
@@ -12,6 +23,9 @@ import { mapState } from "vuex";
 export default {
   name: "MonacoEditor",
   props: ["language"],
+  data: () => ({
+    isCollapsed: false
+  }),
   computed: mapState({
     code(state) {
       const lang = this.language == "javascript" ? "js" : this.language;
@@ -20,9 +34,11 @@ export default {
   }),
   watch: {
     code(newCode, oldCode) {
-      if(!this.justUpdated) {
+      if (!this.justUpdated) {
         if (this.editor) {
+          // const pos = this.editor.getPosition();
           this.editor.setValue(newCode);
+          // this.editor.setPosition(pos);
         }
       } else {
         this.justUpdated = false;
@@ -64,9 +80,19 @@ export default {
     },
     async prepareEditor(root) {
       const monaco = await this.prepareMonaco();
+      // monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ noLib: true, allowNonTsExtensions: true });
+      monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: true
+      });
       this.editor = monaco.editor.create(root, {
         value: this.code,
         language: this.language || "javascript"
+      });
+      this.editor.updateOptions({
+        minimap: {
+          enabled: false
+        }
       });
       this.prepareEvents();
     }
@@ -77,9 +103,15 @@ export default {
 <style lang="scss">
 .MonacoEditor {
   &-container {
-    height: 30vh;
+    height: 25vh;
     border: 1px solid darkgray;
     margin: 2vh;
+  }
+  &-collapsable {
+    &.isCollapsed {
+      max-height: 0;
+      overflow: hidden;
+    }
   }
 }
 </style>

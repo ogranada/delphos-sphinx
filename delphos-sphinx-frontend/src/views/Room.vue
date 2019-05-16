@@ -40,7 +40,6 @@ export default {
     this.room = this.$route.params.room;
     this.username = this.$route.params.username;
     this.roomPassword = localStorage.getItem(`${this.room}:password`);
-    this.ready_to_update = false;
   },
   methods: {
     // NOTHING TO DO
@@ -50,23 +49,13 @@ export default {
 
 <style lang="scss">
 .Room {
-  position: relative;
-  min-height: calc(100vh - 96px);
-
+  display: flex;
+  
   &-editors,
   &-feedback {
     width: 48%;
-    position: absolute;
     display: inline-block;
-    height: 100vh;
-  }
-
-  &-editors {
-    left: 0;
-  }
-
-  &-feedback {
-    left: 50%;
+    height: calc(100vh - 100px);
   }
 }
 </style>

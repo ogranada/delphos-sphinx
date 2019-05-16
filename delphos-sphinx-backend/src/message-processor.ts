@@ -17,13 +17,54 @@ export class MessageProcessor {
         case 'subscribe':
           this.subscribe(parsedMessage, connection)
           break
+        case 'update_code':
+          this.updateCode(parsedMessage, connection)
+          break
       }
     }
   }
 
+  updateCode(message: IMessage, connection: connection) {
+    const targetRoom: IRoom = this.server.getRoomById(message.room)
+    if((targetRoom.code as any)[message.payload.language] === message.payload.code) {
+      return;
+    }
+    Object.assign(targetRoom.code, {
+      [message.payload.language]: message.payload.code,
+    })
+    targetRoom.connections
+      .filter((customer: ICustomer) => customer.id!=message.payload.source)
+      .forEach((customer: ICustomer) => {
+        global.console.log('Resending to customer', customer.name,'->', customer.id);
+        
+      customer.connection.send(JSON.stringify(<IMessage>{
+        type: message.type,
+        room: message.room,
+        payload: {
+          language: message.payload.language,
+          code: message.payload.code
+        }
+      }))
+    })
+  }
+
   subscribe(message: IMessage, connection: connection) {
     const targetRoom: IRoom = this.server.getRoomById(message.room)
-    if (targetRoom && targetRoom.password != message.payload.password) {
+    if (!targetRoom) {
+      connection.send(
+        JSON.stringify(<IMessage>{
+          type: message.type,
+          room: message.room,
+          payload: {
+            status: 'failure',
+            message: 'invalid room',
+          },
+        })
+      )
+      setTimeout(() => {
+        connection.close()
+      }, 1000)
+    } else if (targetRoom.password != message.payload.password) {
       connection.send(
         JSON.stringify(<IMessage>{
           type: message.type,
@@ -45,7 +86,9 @@ export class MessageProcessor {
         name,
         connection,
       }
-      const usersWithName = targetRoom.connections.filter((conn:ICustomer) => conn.name == name);
+      const usersWithName = targetRoom.connections.filter(
+        (conn: ICustomer) => conn.name == name
+      )
       if (usersWithName.length > 0) {
         if (message.payload.id != usersWithName[0].id) {
           connection.send(
@@ -60,9 +103,24 @@ export class MessageProcessor {
           )
           return setTimeout(() => {
             connection.close()
-          }, 1000);
+          }, 1000)
         } else {
-          connContainer.id = message.payload.id;
+          usersWithName[0].connection = connection
+          return connection.send(
+            JSON.stringify(<IMessage>{
+              type: message.type,
+              room: message.room,
+              payload: {
+                status: 'success',
+                message: 'rejoined to room',
+                user: {
+                  id: message.payload.id,
+                  name,
+                },
+                code: targetRoom.code,
+              },
+            })
+          )
         }
       }
       targetRoom.connections.push(connContainer)
@@ -75,9 +133,9 @@ export class MessageProcessor {
             message: 'joined to room',
             user: {
               id,
-              name
+              name,
             },
-            code: targetRoom.code
+            code: targetRoom.code,
           },
         })
       )

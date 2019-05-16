@@ -8,6 +8,7 @@ Vue.use(Vuex);
 export const store = new Vuex.Store({
   state: {
     room: null,
+    id: null,
     user: null,
     password: null,
     html: '',
@@ -26,6 +27,9 @@ export const store = new Vuex.Store({
     update_room(state, room) {
       state.room = room;
     },
+    update_id(state, id) {
+      state.id = id;
+    },
     update_user(state, user) {
       state.user = user;
     },
@@ -34,16 +38,25 @@ export const store = new Vuex.Store({
       state.password = password;
     },
     update_html(state, html) {
-      state.html = html;
-      updateHTML(html);
+      window.console.log(`"${state.html}" -> "${html}"`);
+      if (state.html !== html) {
+        state.html = html;
+        updateHTML(html, state.room, state.id);
+      }
     },
     update_css(state, css) {
-      state.css = css;
-      updateCSS(css);
+      window.console.log(`"${state.css}" -> "${css}"`);
+      if (state.css !== css) {
+        state.css = css;
+        updateCSS(css, state.room, state.id);
+      }
     },
     update_js(state, js) {
-      state.js = js;
-      updateJavascript(js);
+      window.console.log(`"${state.js}" -> "${js}"`);
+      if (state.js !== js) {
+        state.js = js;
+        updateJavascript(js, state.room, state.id);
+      }
     }
   },
   actions: {
@@ -51,7 +64,8 @@ export const store = new Vuex.Store({
       return wsSubscribe(
         context.state.room,
         context.state.user,
-        context.state.password
+        context.state.password,
+        context.state.id
       );
     }
   }
