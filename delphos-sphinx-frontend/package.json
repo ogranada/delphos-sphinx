@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "core-js": "^2.6.5",
+    "monaco-emmet": "^3.1.1",
     "vue": "^2.6.10",
     "vue-material": "^1.0.0-beta-10.2",
     "vue-router": "^3.0.3",
@@ -26,7 +27,6 @@
     "chai": "^4.1.2",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
-    "monaco-editor": "^0.16.2",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.5.21"

@@ -1,5 +1,26 @@
 import { EventEmitter } from "events";
 
+const throttle = (func, limit) => {
+  let lastFunc;
+  let lastRan;
+  return function() {
+    const context = this;
+    const args = arguments;
+    if (!lastRan) {
+      func.apply(context, args);
+      lastRan = Date.now();
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(function() {
+        if (Date.now() - lastRan >= limit) {
+          func.apply(context, args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
+    }
+  };
+};
+
 export function getDataServer(websocket) {
   const storedInfo = localStorage.getItem("DELPHI_WS_SERVER");
   if (websocket) {
@@ -16,7 +37,9 @@ export function getDataServer(websocket) {
 export function prepareListenUpdates(action) {
   if (window.wsConnection) {
     window.wsConnection.answers.on("update_code", info => {
-      action && action(info);
+      const code = atob(info.payload.code);
+      const language = info.payload.language;
+      action && action(language, code, info);
     });
   }
 }
@@ -63,52 +86,32 @@ export function prepareWebSocket() {
   });
 }
 
-export function updateHTML(html, room, source) {
+const updateCode = throttle((language, code, room, source) => {
   if (window.wsConnection) {
     window.wsConnection.send(
       JSON.stringify({
         type: "update_code",
         room,
         payload: {
-          language: "html",
-          code: btoa(html),
+          language,
+          code: btoa(code),
           source
         }
       })
     );
   }
+}, 140); // 45 WpMin / 60 Secs / 10Char ~> 0.014 ~> 140ms
+
+export function updateHTML(html, room, source) {
+  updateCode("html", html, room, source);
 }
 
 export function updateCSS(css, room, source) {
-  if (window.wsConnection) {
-    window.wsConnection.send(
-      JSON.stringify({
-        type: "update_code",
-        room,
-        payload: {
-          language: "css",
-          code: btoa(css),
-          source
-        }
-      })
-    );
-  }
+  updateCode("css", css, room, source);
 }
 
 export function updateJavascript(js, room, source) {
-  if (window.wsConnection) {
-    window.wsConnection.send(
-      JSON.stringify({
-        type: "update_code",
-        room,
-        payload: {
-          language: "js",
-          code: btoa(js),
-          source
-        }
-      })
-    );
-  }
+  updateCode("js", js, room, source);
 }
 
 export function wsSubscribe(room, userName, roomPassword, userId) {

@@ -27,9 +27,7 @@ import {
 export default {
   name: "App",
   mounted() {
-    if (!this.$store.state.html) {
-      document.querySelector('body').setAttribute('suggestions-muted', true);
-    }
+    document.querySelector('body').setAttribute('suggestions-muted', true);
     if (this.$route.name == "Room") {
       const room = this.$route.params.room;
       const userInfo = this.$store.getters.userInfo;
@@ -52,8 +50,10 @@ export default {
           this.$store.commit("update_html", atob(answer.payload.code.html));
           this.$store.commit("update_css", atob(answer.payload.code.css));
           this.$store.commit("update_js", atob(answer.payload.code.js));
-          prepareListenUpdates((info) => {
-            this.$store.commit(`update_${info.payload.language}`, atob(info.payload.code));
+          prepareListenUpdates((language, code /*, info */) => {
+            if (this.$store.state[language] != code) {
+              this.$store.commit(`update_${language}`, code);
+            }
           });
         })
         .catch(error => {

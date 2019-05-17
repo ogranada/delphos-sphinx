@@ -19,6 +19,7 @@
 /* global monaco */
 
 import { mapState } from "vuex";
+import enableEmmet from 'monaco-emmet';
 
 export default {
   name: "MonacoEditor",
@@ -36,9 +37,9 @@ export default {
     code(newCode /*, oldCode */) {
       if (!this.justUpdated) {
         if (this.editor) {
-          // const pos = this.editor.getPosition();
+          const pos = this.editor.getPosition();
           this.editor.setValue(newCode);
-          // this.editor.setPosition(pos);
+          this.editor.setPosition(pos);
         }
       } else {
         this.justUpdated = false;
@@ -89,6 +90,9 @@ export default {
         value: this.code,
         language: this.language || "javascript"
       });
+      if(this.language=='html') {
+        enableEmmet(this.editor);
+      }
       this.editor.updateOptions({
         minimap: {
           enabled: false
