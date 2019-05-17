@@ -166,8 +166,10 @@ export default {
           this.$store.commit('update_html', atob(answer.payload.code.html));
           this.$store.commit('update_css', atob(answer.payload.code.css));
           this.$store.commit('update_js', atob(answer.payload.code.js));
-          prepareListenUpdates((info) => {
-            this.$store.commit(`update_${info.payload.language}`, atob(info.payload.code));
+          prepareListenUpdates((language, code /*, info */) => {
+            if (this.$store.state[language] != code) {
+              this.$store.commit(`update_${language}`, code);
+            }
           });
           this.$set(this, "disableJoin", false);
           this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);

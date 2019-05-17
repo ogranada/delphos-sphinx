@@ -3,7 +3,7 @@
     <md-toolbar class="MonacoEditor-header md-dense">
       <h3 class="md-title">{{this.language}}</h3>
       <div class="md-toolbar-section-end">
-        <md-button class="md-icon-button" @click="isCollapsed = !isCollapsed">
+        <md-button class="md-icon-button" @click="toggleEditorContainer">
           <md-icon v-if="isCollapsed">keyboard_arrow_down</md-icon>
           <md-icon v-if="!isCollapsed">keyboard_arrow_up</md-icon>
         </md-button>
@@ -54,6 +54,12 @@ export default {
     this.prepareEditor(this.container);
   },
   methods: {
+    toggleEditorContainer() {
+      this.isCollapsed = !this.isCollapsed;
+      if(!this.isCollapsed) {
+        this.editor.layout();
+      }
+    },
     prepareEvents() {
       this.editor.onKeyUp((/*event*/) => {
         if (this.content !== this.editor.getValue()) {

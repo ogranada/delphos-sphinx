@@ -76,10 +76,10 @@ export function prepareWebSocket() {
         connection.answers.emit(json.type, json);
       } catch (e) {
         window.console.log(
-          "This doesn't look like a valid JSON: ",
-          message.data
+          "Failure processing message:\n\t%s\n\t%s",
+          message.data,
+          e.message
         );
-        return;
       }
     };
     window.wsConnection = connection;
