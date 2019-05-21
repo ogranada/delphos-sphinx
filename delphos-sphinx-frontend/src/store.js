@@ -1,7 +1,7 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from "@/utils";
+import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from '@/utils';
 
 Vue.use(Vuex);
 
@@ -11,16 +11,16 @@ export const store = new Vuex.Store({
     id: null,
     user: null,
     password: null,
-    html: "",
-    css: "",
-    js: ""
+    html: '',
+    css: '',
+    js: ''
   },
   getters: {
     password(state) {
       return localStorage.getItem(`${state.room}:password`);
     },
     userInfo() {
-      return JSON.parse(localStorage.getItem("USER_INFO")) || {};
+      return JSON.parse(localStorage.getItem('USER_INFO')) || {};
     }
   },
   mutations: {
@@ -37,22 +37,31 @@ export const store = new Vuex.Store({
       localStorage.setItem(`${state.room}:password`, password);
       state.password = password;
     },
-    update_html(state, html) {
+    update_html(state, { code, source }) {
+      const html = code;
       if (state.html !== html) {
         state.html = html;
-        updateHTML(html, state.room, state.id);
+        if (source) {
+          updateHTML(html, state.room, state.id);
+        }
       }
     },
-    update_css(state, css) {
+    update_css(state, { code, source }) {
+      const css = code;
       if (state.css !== css) {
         state.css = css;
-        updateCSS(css, state.room, state.id);
+        if (source) {
+          updateCSS(css, state.room, state.id);
+        }
       }
     },
-    update_js(state, js) {
+    update_js(state, { code, source }) {
+      const js = code;
       if (state.js !== js) {
         state.js = js;
-        updateJavascript(js, state.room, state.id);
+        if (source) {
+          updateJavascript(js, state.room, state.id);
+        }
       }
     }
   },

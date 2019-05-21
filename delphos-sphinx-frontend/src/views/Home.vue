@@ -83,10 +83,7 @@
 // import MonacoEditor from '@/components/MonacoEditor.vue'
 
 import "whatwg-fetch";
-import { 
-  getDataServer,
-  prepareListenUpdates
-} from "@/utils.js";
+import { getDataServer, prepareListenUpdates } from "@/utils.js";
 
 export default {
   name: "home",
@@ -113,7 +110,7 @@ export default {
   methods: {
     async loadRooms() {
       const serverUrl = getDataServer();
-      const response = await fetch(`${serverUrl}/api/rooms`)
+      const response = await fetch(`${serverUrl}/api/rooms`);
       if (response.status == 200) {
         const json = await response.json();
         this.rooms = json.data.rooms;
@@ -125,7 +122,7 @@ export default {
         const response = await fetch(`${getDataServer()}/api/rooms`, {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json; charset=utf-8'
+            "Content-Type": "application/json; charset=utf-8"
           },
           body: JSON.stringify({
             name: this.roomName,
@@ -135,11 +132,15 @@ export default {
         });
         const json = await response.json();
         if (response.status == 200) {
-          await this.loadRooms()
-          this.roomName = '';
-          this.roomPassword = '';
-          this.roomKey = '';
-          this.$set(this, "snackbarMessage", `Room ${json.data.room.name} created`);
+          await this.loadRooms();
+          this.roomName = "";
+          this.roomPassword = "";
+          this.roomKey = "";
+          this.$set(
+            this,
+            "snackbarMessage",
+            `Room ${json.data.room.name} created`
+          );
           this.$set(this, "showSnackbar", true);
         } else {
           this.$set(this, "snackbarMessage", json.errors[0].message);
@@ -153,33 +154,35 @@ export default {
     },
     joinToRoom() {
       this.$set(this, "disableJoin", true);
-      this.$store.commit('update_id', this.$store.getters.userInfo.id);
+      this.$store.commit("update_id", this.$store.getters.userInfo.id);
       this.$store.commit("update_room", this.joinRoomName);
       this.$store.commit("update_user", this.userName);
       this.$store.commit("update_password", this.joinRoomPassword);
       const pr = this.$store.dispatch("register");
-      pr
-        .then(answer => {
-          localStorage.setItem('USER_INFO', JSON.stringify(answer.payload.user));
-          this.$store.commit('update_id', answer.payload.user.id);
-          this.$store.commit('update_user', answer.payload.user.name);
-          this.$store.commit('update_html', atob(answer.payload.code.html));
-          this.$store.commit('update_css', atob(answer.payload.code.css));
-          this.$store.commit('update_js', atob(answer.payload.code.js));
-          prepareListenUpdates((language, code /*, info */) => {
-            if (this.$store.state[language] != code) {
-              this.$store.commit(`update_${language}`, code);
-            }
-          });
-          this.$set(this, "disableJoin", false);
-          this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);
-        })
-        .catch(answer => {
-          window.console.error('Error subscribing user:', answer);
-          this.$set(this, "snackbarMessage", answer.payload.message);
-          this.$set(this, "showSnackbar", true);
-          this.$set(this, "disableJoin", false);
-        })
+      pr.then(answer => {
+        localStorage.setItem("USER_INFO", JSON.stringify(answer.payload.user));
+        this.$store.commit("update_id", answer.payload.user.id);
+        this.$store.commit("update_user", answer.payload.user.name);
+        this.$store.commit("update_html", {
+          code: atob(answer.payload.code.html)
+        });
+        this.$store.commit("update_css", {
+          code: atob(answer.payload.code.css)
+        });
+        this.$store.commit("update_js", { code: atob(answer.payload.code.js) });
+        prepareListenUpdates((language, code /*, info */) => {
+          if (this.$store.state[language] != code) {
+            this.$store.commit(`update_${language}`, {code});
+          }
+        });
+        this.$set(this, "disableJoin", false);
+        this.$router.push(`/room/${answer.room}/${answer.payload.user.name}`);
+      }).catch(answer => {
+        window.console.error("Error subscribing user:", answer);
+        this.$set(this, "snackbarMessage", answer.payload.message);
+        this.$set(this, "showSnackbar", true);
+        this.$set(this, "disableJoin", false);
+      });
     }
   }
 };

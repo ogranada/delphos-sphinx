@@ -61,14 +61,14 @@ export default {
       }
     },
     prepareEvents() {
-      this.editor.onKeyUp((/*event*/) => {
+      this.editor.onKeyUp(event => {
         if (this.content !== this.editor.getValue()) {
           const update_lang = `update_${
             this.language == "javascript" ? "js" : this.language
           }`;
           this.content = this.editor.getValue();
           this.justUpdated = true;
-          this.$store.commit(update_lang, this.content);
+          this.$store.commit(update_lang, {code:this.content, source: event});
         }
       });
     },
