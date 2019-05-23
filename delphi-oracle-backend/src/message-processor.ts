@@ -12,7 +12,7 @@ export class MessageProcessor {
   process(connection: connection, message: any) {
     if (message.type === 'utf8') {
       const parsedMessage: IMessage = JSON.parse(message.utf8Data)
-      console.log('\n\nProcessing:\n', JSON.stringify(parsedMessage, null, 2))
+      global.console.log('\n\nProcessing:\n', JSON.stringify(parsedMessage, null, 2))
       switch (parsedMessage.type) {
         case 'subscribe':
           this.subscribe(parsedMessage, connection)
@@ -28,7 +28,6 @@ export class MessageProcessor {
   }
 
   resendRunCode(message: IMessage, connection: connection) {
-    console.log(this.server.getRooms(), null, 2)
     const targetRoom: IRoom = this.server.getRoomById(message.room)
     targetRoom.connections
       .filter((customer: ICustomer) => customer.id != message.payload.source)

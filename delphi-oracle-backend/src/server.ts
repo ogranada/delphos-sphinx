@@ -9,10 +9,6 @@ import { MessageProcessor } from './message-processor'
 import {
   IServerConfig,
   IRoom,
-  ISubscription,
-  IUpdate,
-  IBackendScripts,
-  IScriptFile,
   ICode,
 } from 'data-interfaces'
 

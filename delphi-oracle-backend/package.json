@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --sourceMap --outDir dist",
     "build:watch": "tsc --sourceMap -w --outDir dist",
-    "prepare-deploy": "npm run build && node -e 'console.log(`web: node main.js`)' > dist/Procfile",
+    "prepare-deploy": "npm run build && cp Procfile dist",
     "execute": "ENV=development node dist/main.js",
     "execute:watch": "ENV=development forever -w --minUptime 1000 --spinSleepTime 1000 dist/main.js"
   },
