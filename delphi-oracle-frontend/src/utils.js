@@ -44,6 +44,30 @@ export function prepareListenUpdates(action) {
   }
 }
 
+export function prepareListenRunCode(action) {
+  if (window.wsConnection) {
+    window.wsConnection.answers.on("run_code", info => {
+      action && action(info);
+    });
+  } else {
+    prepareWebSocket().then(() => {
+      prepareListenRunCode(action);
+    });
+  }
+}
+
+export function sendRunCodeMessage(room, userId, userName) {
+  if (window.wsConnection) {
+    window.wsConnection.send(
+      JSON.stringify({
+        type: "run_code",
+        room,
+        payload: { source: userId, name: userName }
+      })
+    );
+  }
+}
+
 export function prepareWebSocket() {
   return new Promise((resolve, reject) => {
     window.WebSocket = window.WebSocket || window.MozWebSocket;
@@ -73,6 +97,7 @@ export function prepareWebSocket() {
     connection.onmessage = function(message) {
       try {
         const json = JSON.parse(message.data);
+        window.console.log(json);
         connection.answers.emit(json.type, json);
       } catch (e) {
         window.console.log(

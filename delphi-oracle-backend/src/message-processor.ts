@@ -20,32 +20,68 @@ export class MessageProcessor {
         case 'update_code':
           this.updateCode(parsedMessage, connection)
           break
+        case 'run_code':
+          this.resendRunCode(parsedMessage, connection)
+          break
       }
     }
   }
 
+  resendRunCode(message: IMessage, connection: connection) {
+    console.log(this.server.getRooms(), null, 2)
+    const targetRoom: IRoom = this.server.getRoomById(message.room)
+    targetRoom.connections
+      .filter((customer: ICustomer) => customer.id != message.payload.source)
+      .forEach((customer: ICustomer) => {
+        global.console.log(
+          'Resending to customer',
+          customer.name,
+          '->',
+          customer.id
+        )
+
+        customer.connection.send(
+          JSON.stringify(<IMessage>{
+            type: message.type,
+            room: message.room,
+            payload: message.payload,
+          })
+        )
+      })
+  }
+
   updateCode(message: IMessage, connection: connection) {
     const targetRoom: IRoom = this.server.getRoomById(message.room)
-    if((targetRoom.code as any)[message.payload.language] === message.payload.code) {
-      return;
+    if (
+      (targetRoom.code as any)[message.payload.language] ===
+      message.payload.code
+    ) {
+      return
     }
     Object.assign(targetRoom.code, {
       [message.payload.language]: message.payload.code,
     })
     targetRoom.connections
-      .filter((customer: ICustomer) => customer.id!=message.payload.source)
+      .filter((customer: ICustomer) => customer.id != message.payload.source)
       .forEach((customer: ICustomer) => {
-        global.console.log('Resending to customer', customer.name,'->', customer.id);
-        
-      customer.connection.send(JSON.stringify(<IMessage>{
-        type: message.type,
-        room: message.room,
-        payload: {
-          language: message.payload.language,
-          code: message.payload.code
-        }
-      }))
-    })
+        global.console.log(
+          'Resending to customer',
+          customer.name,
+          '->',
+          customer.id
+        )
+
+        customer.connection.send(
+          JSON.stringify(<IMessage>{
+            type: message.type,
+            room: message.room,
+            payload: {
+              language: message.payload.language,
+              code: message.payload.code,
+            },
+          })
+        )
+      })
   }
 
   subscribe(message: IMessage, connection: connection) {
