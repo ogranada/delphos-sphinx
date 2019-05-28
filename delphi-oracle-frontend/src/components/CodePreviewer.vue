@@ -7,11 +7,13 @@
     </div>
     -->
     <div class="CodePreviewer-previewContainer">
-      <div class="CodePreviewer-title">Preview</div>
-      <div class="CodePreviewer-preview"></div>
+      <md-list class="md-double-line">
+        <md-subheader>App</md-subheader>
+        <div class="CodePreviewer-preview"></div>
+      </md-list>
     </div>
     <div class="CodePreviewer-consoleContainer">
-      <div class="CodePreviewer-title">Console</div>
+      <md-subheader>Console</md-subheader>
       <div class="CodePreviewer-console"></div>
     </div>
     <md-speed-dial class="right">
@@ -30,16 +32,15 @@
 
 
 <script>
-
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 
 export default {
   name: "CodePreview",
-  props: ['executeCode'],
+  props: ["executeCode"],
   mounted() {
     this.prepareLog();
   },
-  computed: mapState(...['html', 'css', 'js']),
+  computed: mapState(...["html", "css", "js"]),
   methods: {
     runCode() {
       this.updateHTMLContainer(this.$store.state.html);
@@ -69,30 +70,32 @@ export default {
           customFunction.call(context);
           this.old_js = jsCode;
         } catch (error) {
-          context.console.error(error)
+          context.console.error(error);
         }
       }
     },
     prepareLog() {
-      if(window.log) {
+      if (window.log) {
         return;
       }
-      const consoleSelector = '.CodePreviewer-console';
+      const consoleSelector = ".CodePreviewer-console";
       window.log = function() {
         const out = document.createElement("div");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          ;
+        out.innerHTML = Array.prototype.slice
+          .call(arguments)
+          .join(" ")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
         document.querySelector(consoleSelector).appendChild(out);
       };
       window.error = function() {
         const out = document.createElement("div");
         out.classList.add("error");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          ;
+        out.innerHTML = Array.prototype.slice
+          .call(arguments)
+          .join(" ")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
         document.querySelector(consoleSelector).appendChild(out);
       };
     },
@@ -123,18 +126,21 @@ export default {
 
 <style lang="scss">
 .CodePreviewer {
-  padding-left: 1em;
-
   &-preview,
   &-console {
     position: relative;
     border: 1px solid gray;
     border-radius: 2px;
-    margin: 1em;
+    margin: 0 1em;
     padding: 5px;
     font-family: monospace;
     color: #40535d;
-    min-height: 35vh;
+  }
+  &-preview {
+    min-height: 45vh;
+  }
+  &-console {
+    min-height: 25vh;
   }
   &-title {
     font-size: 1.3em;
@@ -147,7 +153,6 @@ export default {
     right: 1.5em;
     bottom: 2.5em;
   }
-
 }
 </style>
 

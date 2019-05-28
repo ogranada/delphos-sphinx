@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 const throttle = (func, limit) => {
   let lastFunc;
   let lastRan;
-  return function() {
+  return function () {
     const context = this;
     const args = arguments;
     if (!lastRan) {
@@ -11,7 +11,7 @@ const throttle = (func, limit) => {
       lastRan = Date.now();
     } else {
       clearTimeout(lastFunc);
-      lastFunc = setTimeout(function() {
+      lastFunc = setTimeout(function () {
         if (Date.now() - lastRan >= limit) {
           func.apply(context, args);
           lastRan = Date.now();
@@ -22,15 +22,15 @@ const throttle = (func, limit) => {
 };
 
 export function getDataServer(websocket) {
-  const storedInfo = localStorage.getItem("DELPHI_WS_SERVER");
+  const storedInfo = localStorage.getItem("DELPHI_WS_SERVER") || 'localhost:5000'; // TODO: Improve, only for local purposes
   if (websocket) {
     return `${
       location.protocol.startsWith("https") ? "wss" : "ws"
-    }://${storedInfo || window.location.host}`;
+      }://${storedInfo || window.location.host}`;
   } else {
     return `${
       location.protocol.startsWith("https") ? "https" : "http"
-    }://${storedInfo || window.location.host}`;
+      }://${storedInfo || window.location.host}`;
   }
 }
 
@@ -51,26 +51,26 @@ export function prepareWebSocket() {
     const connection = new WebSocket(wsAddress);
     connection.answers = new EventEmitter();
 
-    connection.onopen = function() {
+    connection.onopen = function () {
       // connection is opened and ready to use
       window.console.log("Connection opened.");
       resolve(connection);
     };
 
-    connection.onclose = function() {
+    connection.onclose = function () {
       window.console.log("Connection closed.");
       window.wsConnection = undefined;
       resolve(null);
     };
 
-    connection.onerror = function(error) {
+    connection.onerror = function (error) {
       // an error occurred when sending/receiving data
       window.console.error(error);
       window.wsConnection = undefined;
       reject(new Error("conection closed"));
     };
 
-    connection.onmessage = function(message) {
+    connection.onmessage = function (message) {
       try {
         const json = JSON.parse(message.data);
         connection.answers.emit(json.type, json);
