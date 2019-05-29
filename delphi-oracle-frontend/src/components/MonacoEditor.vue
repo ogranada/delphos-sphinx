@@ -1,9 +1,7 @@
 <template>
-  <md-list class="md-double-line">
-    <div class="MonacoEditor-container">
-      <div class="MonacoEditor" :data-language="this.language"></div>
-    </div>
-  </md-list>
+  <div class="MonacoEditor-container">
+    <div class="MonacoEditor" :data-language="this.language"></div>
+  </div>
 </template>
 
 <script>
@@ -55,11 +53,12 @@ export default {
           this.justUpdated = true;
           this.$store.commit(update_lang, {
             code: this.content,
-            source: event
+            source: event,
+            position: this.editor.getPosition()
           });
         }
       });
-      window.addEventListener('resize', () => this.editor.layout());
+      window.addEventListener("resize", () => this.editor.layout());
     },
     async prepareMonaco() {
       return new Promise((resolve, reject) => {
@@ -96,8 +95,28 @@ export default {
         minimap: {
           enabled: false
         },
+        scrollbar: {
+          // Subtle shadows to the left & top. Defaults to true.
+          useShadows: false,
+          // Render vertical arrows. Defaults to false.
+          verticalHasArrows: false,
+          // Render horizontal arrows. Defaults to false.
+          horizontalHasArrows: false,
+          // Render vertical scrollbar.
+          // Accepted values: 'auto', 'visible', 'hidden'.
+          // Defaults to 'auto'
+          vertical: "hidden",
+          // Render horizontal scrollbar.
+          // Accepted values: 'auto', 'visible', 'hidden'.
+          // Defaults to 'auto'
+          horizontal: "hidden",
+          verticalScrollbarSize: 10,
+          horizontalScrollbarSize: 10,
+          arrowSize: 10
+        },
         renderLineHighlight: "none",
-        scrollBeyondLastColumn: 0
+        scrollBeyondLastColumn: 0,
+        scrollBeyondLastRow: 0
       });
       this.prepareEvents();
     }
@@ -111,8 +130,21 @@ export default {
   width: calc(100% - 1px);
   &-container {
     min-height: 72vh;
-    border: 1px solid darkgray;
-    margin: 0 2vh;
+    margin: 5px 0;
+  }
+
+  .monaco-editor .monaco-scrollable-element .scrollbar.horizontal,
+  .monaco-editor .decorationsOverviewRuler,
+  .monaco-editor
+    .monaco-scrollable-element
+    .scrollbar.vertical
+    .arrow-background {
+    background: rgba(230, 230, 230, 255);
+  }
+  /* Make vertical scrollbar transparent to allow decorations overview ruler to be visible */
+  .monaco-editor .monaco-scrollable-element .scrollbar.vertical {
+    background: rgba(0, 0, 0, 0);
+    width: 10px !important; // God, forgive me for this... :'(
   }
 }
 </style>

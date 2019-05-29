@@ -68,6 +68,18 @@ export function sendRunCodeMessage(room, userId, userName) {
   }
 }
 
+export function sendEcho(room) {
+  if (window.wsConnection) {
+    window.wsConnection.send(
+      JSON.stringify({
+        type: 'echo',
+        room,
+        payload: {}
+      })
+    );
+  }
+}
+
 export function prepareWebSocket() {
   return new Promise((resolve, reject) => {
     if (window.wsConnection) {

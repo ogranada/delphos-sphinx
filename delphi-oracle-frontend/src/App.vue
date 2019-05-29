@@ -17,12 +17,17 @@
 </template>
 
 <script>
-import { reconnect, prepareListenUpdates } from "@/utils.js";
+import { reconnect, prepareListenUpdates, sendEcho } from "@/utils.js";
 
 export default {
   name: "App",
   mounted() {
     document.querySelector("body").setAttribute("suggestions-muted", true);
+    
+    setInterval(() => {
+      sendEcho(this.$store.state.room);
+    }, 60 * 1000);
+
     if (this.$route.name == "Room") {
       const room = this.$route.params.room;
       const userInfo = this.$store.getters.userInfo;

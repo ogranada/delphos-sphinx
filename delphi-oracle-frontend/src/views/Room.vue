@@ -5,13 +5,13 @@
         <span class="md-title">Coding</span>
       </md-toolbar>
       <md-tabs md-sync-route>
-        <md-tab id="tab-html" md-label="html">
+        <md-tab class="Room-tab" id="tab-html" md-label="html">
           <monaco-editor language="html"></monaco-editor>
         </md-tab>
-        <md-tab id="tab-css" md-label="css">
+        <md-tab class="Room-tab" id="tab-css" md-label="css">
           <monaco-editor language="css"></monaco-editor>
         </md-tab>
-        <md-tab id="tab-js" md-label="js">
+        <md-tab class="Room-tab" id="tab-js" md-label="js">
           <monaco-editor language="javascript"></monaco-editor>
         </md-tab>
       </md-tabs>
@@ -58,7 +58,9 @@ export default {
 <style lang="scss">
 .Room {
   display: flex;
-
+  &-tab {
+    padding: 0;
+  }
   &-editors,
   &-feedback {
     width: 49%;
