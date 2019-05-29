@@ -1,25 +1,16 @@
 <template>
-  <div>
-    <md-toolbar class="MonacoEditor-header md-dense">
-      <h3 class="md-title">{{this.language}}</h3>
-      <div class="md-toolbar-section-end">
-        <md-button class="md-icon-button" @click="toggleEditorContainer">
-          <md-icon v-if="isCollapsed">keyboard_arrow_down</md-icon>
-          <md-icon v-if="!isCollapsed">keyboard_arrow_up</md-icon>
-        </md-button>
-      </div>
-    </md-toolbar>
-    <div :class="`MonacoEditor-collapsable ${isCollapsed?'isCollapsed':''}`">
-      <div class="MonacoEditor-container" :data-language="this.language"></div>
+  <md-list class="md-double-line">
+    <div class="monaco-editor-container">
+      <div class="monaco-editor" :data-language="this.language"></div>
     </div>
-  </div>
+  </md-list>
 </template>
 
 <script>
 /* global monaco */
 
 import { mapState } from "vuex";
-import enableEmmet from 'monaco-emmet';
+import enableEmmet from "monaco-emmet";
 
 export default {
   name: "MonacoEditor",
@@ -48,18 +39,12 @@ export default {
   },
   mounted() {
     this.container = document.querySelector(
-      `.MonacoEditor-container[data-language="${this.language}"]`
+      `.monaco-editor[data-language="${this.language}"]`
     );
     this.editor = null;
     this.prepareEditor(this.container);
   },
   methods: {
-    toggleEditorContainer() {
-      this.isCollapsed = !this.isCollapsed;
-      if(!this.isCollapsed) {
-        this.editor.layout();
-      }
-    },
     prepareEvents() {
       this.editor.onKeyUp(event => {
         if (this.content !== this.editor.getValue()) {
@@ -68,7 +53,10 @@ export default {
           }`;
           this.content = this.editor.getValue();
           this.justUpdated = true;
-          this.$store.commit(update_lang, {code:this.content, source: event});
+          this.$store.commit(update_lang, {
+            code: this.content,
+            source: event
+          });
         }
       });
     },
@@ -90,19 +78,25 @@ export default {
       // monaco.languages.typescript.javascriptDefaults.setCompilerOptions({ noLib: true, allowNonTsExtensions: true });
       monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
         noSemanticValidation: true,
-        noSyntaxValidation: true
+        noSyntaxValidation: true,
+        extraEditorClassName: "monaco-editor-style"
       });
       this.editor = monaco.editor.create(root, {
         value: this.code,
         language: this.language || "javascript"
       });
-      if(this.language=='html') {
+      if (this.language == "html") {
         enableEmmet(this.editor);
       }
       this.editor.updateOptions({
+        hideCursorInOverviewRuler: true,
+        lineDecorationsWidth: 0,
+        lineNumbers: false,
         minimap: {
           enabled: false
-        }
+        },
+        renderLineHighlight: "none",
+        scrollBeyondLastColumn: 0
       });
       this.prepareEvents();
     }
@@ -111,17 +105,13 @@ export default {
 </script>
 
 <style lang="scss">
-.MonacoEditor {
+.monaco-editor {
+  height: calc(72vh - 3px);
+  width: calc(100% - 1px);
   &-container {
-    height: 25vh;
+    min-height: 72vh;
     border: 1px solid darkgray;
-    margin: 2vh;
-  }
-  &-collapsable {
-    &.isCollapsed {
-      max-height: 0;
-      overflow: hidden;
-    }
+    margin: 0 2vh;
   }
 }
 </style>

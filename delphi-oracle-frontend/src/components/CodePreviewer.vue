@@ -7,11 +7,13 @@
     </div>
     -->
     <div class="CodePreviewer-previewContainer">
-      <div class="CodePreviewer-title">Preview</div>
-      <div class="CodePreviewer-preview"></div>
+      <md-list class="md-double-line">
+        <md-subheader>App</md-subheader>
+        <div class="CodePreviewer-preview"></div>
+      </md-list>
     </div>
     <div class="CodePreviewer-consoleContainer">
-      <div class="CodePreviewer-title">Console</div>
+      <md-subheader>Console</md-subheader>
       <div class="CodePreviewer-console"></div>
     </div>
     <md-speed-dial class="right">
@@ -20,21 +22,11 @@
       </md-speed-dial-target>
 
       <md-speed-dial-content>
-        <md-button class="md-icon-button" @click="runCodeHandler">
+        <md-button class="md-icon-button" @click="runCode">
           <md-icon>play_arrow</md-icon>
         </md-button>
       </md-speed-dial-content>
     </md-speed-dial>
-
-    <md-snackbar
-      md-position="center"
-      :md-duration="5000"
-      :md-active.sync="showSnackbar"
-      md-persistent
-    >
-      <span>{{ snackbarMessage }}</span>
-      <md-button class="md-accent" @click="showSnackbar = false">close</md-button>
-    </md-snackbar>
   </div>
 </template>
 
@@ -147,18 +139,21 @@ export default {
 
 <style lang="scss">
 .CodePreviewer {
-  padding-left: 1em;
-
   &-preview,
   &-console {
     position: relative;
     border: 1px solid gray;
     border-radius: 2px;
-    margin: 1em;
+    margin: 0 1em;
     padding: 5px;
     font-family: monospace;
     color: #40535d;
-    min-height: 35vh;
+  }
+  &-preview {
+    min-height: 45vh;
+  }
+  &-console {
+    min-height: 25vh;
   }
   &-title {
     font-size: 1.3em;
@@ -171,7 +166,6 @@ export default {
     right: 1.5em;
     bottom: 2.5em;
   }
-
 }
 </style>
 

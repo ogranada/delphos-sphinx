@@ -1,42 +1,46 @@
-import Vue from "vue";
-import { store } from "./store";
+import Vue from 'vue';
+import { store } from './store';
 
 // import VueMaterial from "vue-material";
 import {
-  MdButton,
-  MdContent,
   MdApp,
-  MdToolbar,
+  MdButton,
   MdCard,
-  MdSnackbar,
-  MdRipple,
+  MdContent,
   MdField,
-  MdMenu,
   MdList,
-  MdSpeedDial
-} from "vue-material/dist/components";
-import "vue-material/dist/vue-material.min.css";
-import "vue-material/dist/theme/black-green-light.css";
+  MdMenu,
+  MdRipple,
+  MdSnackbar,
+  MdSpeedDial,
+  MdSubheader,
+  MdTabs,
+  MdToolbar
+} from 'vue-material/dist/components';
+import 'vue-material/dist/vue-material.min.css';
+import 'vue-material/dist/theme/black-green-light.css';
 
-import App from "./App.vue";
-import router from "./router";
+import App from './App.vue';
+import router from './router';
 
 Vue.config.productionTip = false;
 
 // Vue.use(VueMaterial);
 Vue.use(MdApp);
 Vue.use(MdButton);
-Vue.use(MdContent);
-Vue.use(MdToolbar);
 Vue.use(MdCard);
-Vue.use(MdSnackbar);
-Vue.use(MdRipple);
+Vue.use(MdContent);
 Vue.use(MdField);
-Vue.use(MdMenu);
 Vue.use(MdList);
+Vue.use(MdMenu);
+Vue.use(MdRipple);
+Vue.use(MdSnackbar);
 Vue.use(MdSpeedDial);
+Vue.use(MdSubheader);
+Vue.use(MdTabs);
+Vue.use(MdToolbar);
 new Vue({
   store,
   router,
   render: h => h(App)
-}).$mount("#app");
+}).$mount('#app');
