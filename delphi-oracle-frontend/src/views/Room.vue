@@ -1,6 +1,6 @@
 <template>
-  <div class="room">
-    <div class="room-editors">
+  <div class="Room">
+    <div class="Room-editors">
       <md-toolbar :md-elevation="1">
         <span class="md-title">Coding</span>
       </md-toolbar>
@@ -16,8 +16,8 @@
         </md-tab>
       </md-tabs>
     </div>
-    <div class="room-separator"></div>
-    <div class="room-feedback">
+    <div class="Room-separator"></div>
+    <div class="Room-feedback">
       <md-toolbar :md-elevation="1">
         <span class="md-title">Preview</span>
       </md-toolbar>
@@ -56,7 +56,7 @@ export default {
 </script>
 
 <style lang="scss">
-.room {
+.Room {
   display: flex;
 
   &-editors,

@@ -1,7 +1,7 @@
 <template>
   <md-list class="md-double-line">
-    <div class="monaco-editor-container">
-      <div class="monaco-editor" :data-language="this.language"></div>
+    <div class="MonacoEditor-container">
+      <div class="MonacoEditor" :data-language="this.language"></div>
     </div>
   </md-list>
 </template>
@@ -105,7 +105,7 @@ export default {
 </script>
 
 <style lang="scss">
-.monaco-editor {
+.MonacoEditor {
   height: calc(72vh - 3px);
   width: calc(100% - 1px);
   &-container {
