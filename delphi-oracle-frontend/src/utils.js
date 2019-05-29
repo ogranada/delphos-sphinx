@@ -70,6 +70,15 @@ export function sendRunCodeMessage(room, userId, userName) {
 
 export function prepareWebSocket() {
   return new Promise((resolve, reject) => {
+    if (window.wsConnection) {
+      const ivK = setInterval(() => {
+        if (window.wsConnection.readyState) {
+          clearInterval(ivK);
+          resolve(window.wsConnection);
+        }
+      }, 100);
+      return ivK;
+    }
     window.WebSocket = window.WebSocket || window.MozWebSocket;
     const wsAddress = getDataServer(true);
     const connection = new WebSocket(wsAddress);
@@ -78,7 +87,13 @@ export function prepareWebSocket() {
     connection.onopen = function() {
       // connection is opened and ready to use
       window.console.log('Connection opened.');
-      resolve(connection);
+      const ivK = setInterval(() => {
+        if (window.wsConnection.readyState) {
+          window.console.log('Connection ready.');
+          clearInterval(ivK);
+          resolve(window.wsConnection);
+        }
+      }, 100);
     };
 
     connection.onclose = function() {
@@ -140,24 +155,28 @@ export function updateJavascript(js, room, source) {
 
 export function wsSubscribe(room, userName, roomPassword, userId) {
   return new Promise((resolve, reject) => {
-    if (window.wsConnection) {
-      window.wsConnection.answers.on('subscribe', info => {
-        if (info.payload.status == 'success') {
-          resolve(info);
-        } else {
-          reject(info);
-        }
-      });
-      const subsMessage = JSON.stringify({
-        type: 'subscribe',
-        room: room,
-        payload: {
-          id: userId,
-          name: userName,
-          password: roomPassword
-        }
-      });
-      window.wsConnection.send(subsMessage);
+    if (window.wsConnection && window.wsConnection.readyState) {
+      try {
+        window.wsConnection.answers.on('subscribe', info => {
+          if (info.payload.status == 'success') {
+            resolve(info);
+          } else {
+            reject(info);
+          }
+        });
+        const subsMessage = JSON.stringify({
+          type: 'subscribe',
+          room: room,
+          payload: {
+            id: userId,
+            name: userName,
+            password: roomPassword
+          }
+        });
+        window.wsConnection.send(subsMessage);
+      } catch (error) {
+        window.console.error(error);
+      }
     } else {
       prepareWebSocket().then(() => {
         wsSubscribe(room, userName, roomPassword, userId)

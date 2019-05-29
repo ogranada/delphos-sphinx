@@ -24,6 +24,11 @@ export const store = new Vuex.Store({
     }
   },
   mutations: {
+    update_userInfo(state, userData) {
+      localStorage.setItem('USER_INFO', JSON.stringify(userData));
+      state.id = userData.id;
+      state.user = userData.user;
+    },
     update_room(state, room) {
       state.room = room;
     },

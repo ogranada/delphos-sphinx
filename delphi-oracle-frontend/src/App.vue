@@ -36,10 +36,7 @@ export default {
       const reconnection = reconnect(room, id, username, password);
       reconnection
         .then(answer => {
-          localStorage.setItem(
-            "USER_INFO",
-            JSON.stringify(answer.payload.user)
-          );
+          this.$store.commit("update_userInfo", answer.payload.user);
           this.$store.commit("update_id", answer.payload.user.id);
           this.$store.commit("update_user", answer.payload.user.name);
           this.$store.commit("update_html", {

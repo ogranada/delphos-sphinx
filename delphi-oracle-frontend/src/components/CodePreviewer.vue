@@ -22,40 +22,62 @@
       </md-speed-dial-target>
 
       <md-speed-dial-content>
-        <md-button class="md-icon-button" @click="runCode">
+        <md-button class="md-icon-button" @click="runCodeHandler">
           <md-icon>play_arrow</md-icon>
         </md-button>
       </md-speed-dial-content>
     </md-speed-dial>
+    <md-snackbar
+      md-position="center"
+      :md-duration="5000"
+      :md-active.sync="showSnackbar"
+      md-persistent
+    >
+      <span>{{ snackbarMessage }}</span>
+      <md-button class="md-accent" @click="showSnackbar = false">close</md-button>
+    </md-snackbar>
   </div>
 </template>
 
 
 <script>
-
-import { mapState } from 'vuex';
+import { mapState } from "vuex";
 import { prepareListenRunCode, sendRunCodeMessage } from "@/utils";
 
 export default {
   name: "CodePreview",
-  props: ['executeCode'],
+  props: ["executeCode"],
   data: () => ({
-    snackbarMessage: '',
-    showSnackbar: false,
+    snackbarMessage: "",
+    showSnackbar: false
   }),
   mounted() {
     this.prepareLog();
     prepareListenRunCode(info => {
-      this.$set(this, 'snackbarMessage', `Code executed by ${info.payload.name}`);
-      this.$set(this, 'showSnackbar', true);
+      this.$set(
+        this,
+        "snackbarMessage",
+        `Code executed by ${info.payload.name}`
+      );
+      this.$set(this, "showSnackbar", true);
       this.runCode();
     });
   },
-  computed: mapState(...['html', 'css', 'js']),
+  computed: mapState(...["html", "css", "js"]),
   methods: {
     runCodeHandler() {
-      sendRunCodeMessage(this.$store.state.room, this.$store.getters.userInfo.id, this.$store.getters.userInfo.name);
+      sendRunCodeMessage(
+        this.$store.state.room,
+        this.$store.state.id || this.$store.getters.userInfo.id,
+        this.$store.state.user || this.$store.getters.userInfo.name
+      );
       this.runCode();
+      this.$set(
+        this,
+        "snackbarMessage",
+        "Code executed by me"
+      );
+      this.$set(this, "showSnackbar", true);
     },
     runCode() {
       this.updateHTMLContainer(this.$store.state.html);
@@ -85,30 +107,32 @@ export default {
           customFunction.call(context);
           this.old_js = jsCode;
         } catch (error) {
-          context.console.error(error)
+          context.console.error(error);
         }
       }
     },
     prepareLog() {
-      if(window.log) {
+      if (window.log) {
         return;
       }
-      const consoleSelector = '.CodePreviewer-console';
+      const consoleSelector = ".CodePreviewer-console";
       window.log = function() {
         const out = document.createElement("div");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          ;
+        out.innerHTML = Array.prototype.slice
+          .call(arguments)
+          .join(" ")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
         document.querySelector(consoleSelector).appendChild(out);
       };
       window.error = function() {
         const out = document.createElement("div");
         out.classList.add("error");
-        out.innerHTML = Array.prototype.slice.call(arguments).join(" ")
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          ;
+        out.innerHTML = Array.prototype.slice
+          .call(arguments)
+          .join(" ")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
         document.querySelector(consoleSelector).appendChild(out);
       };
     },

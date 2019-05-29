@@ -39,7 +39,7 @@ export default {
   },
   mounted() {
     this.container = document.querySelector(
-      `.monaco-editor[data-language="${this.language}"]`
+      `.MonacoEditor[data-language="${this.language}"]`
     );
     this.editor = null;
     this.prepareEditor(this.container);
@@ -59,6 +59,7 @@ export default {
           });
         }
       });
+      window.addEventListener('resize', () => this.editor.layout());
     },
     async prepareMonaco() {
       return new Promise((resolve, reject) => {
@@ -91,7 +92,7 @@ export default {
       this.editor.updateOptions({
         hideCursorInOverviewRuler: true,
         lineDecorationsWidth: 0,
-        lineNumbers: false,
+        lineNumbers: true,
         minimap: {
           enabled: false
         },

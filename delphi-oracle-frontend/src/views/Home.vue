@@ -160,7 +160,7 @@ export default {
       this.$store.commit("update_password", this.joinRoomPassword);
       const pr = this.$store.dispatch("register");
       pr.then(answer => {
-        localStorage.setItem("USER_INFO", JSON.stringify(answer.payload.user));
+        this.$store.commit("update_userInfo", answer.payload.user);
         this.$store.commit("update_id", answer.payload.user.id);
         this.$store.commit("update_user", answer.payload.user.name);
         this.$store.commit("update_html", {
