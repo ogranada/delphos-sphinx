@@ -1,31 +1,39 @@
 <template>
-  <div class="Room">
-    <div class="Room-editors">
-      <monaco-editor
-        language="html"
-      ></monaco-editor>
-      <monaco-editor
-        language="css"
-      ></monaco-editor>
-      <monaco-editor
-        language="javascript"
-      ></monaco-editor>
+  <div class="room">
+    <div class="room-editors">
+      <md-toolbar :md-elevation="1">
+        <span class="md-title">Coding</span>
+      </md-toolbar>
+      <md-tabs md-sync-route>
+        <md-tab id="tab-html" md-label="html">
+          <monaco-editor language="html"></monaco-editor>
+        </md-tab>
+        <md-tab id="tab-css" md-label="css">
+          <monaco-editor language="css"></monaco-editor>
+        </md-tab>
+        <md-tab id="tab-js" md-label="js">
+          <monaco-editor language="javascript"></monaco-editor>
+        </md-tab>
+      </md-tabs>
     </div>
-    <div class="Room-feedback">
+    <div class="room-separator"></div>
+    <div class="room-feedback">
+      <md-toolbar :md-elevation="1">
+        <span class="md-title">Preview</span>
+      </md-toolbar>
       <code-previewer></code-previewer>
     </div>
   </div>
 </template>
 
 <script>
-
 // @ is an alias to /src
 // import MonacoEditor from '@/components/MonacoEditor.vue'
 import MonacoEditor from "@/components/MonacoEditor.vue";
 import CodePreviewer from "@/components/CodePreviewer.vue";
 
 export default {
-  name: "Room",
+  name: "room",
   data() {
     return {
       room: null
@@ -48,14 +56,18 @@ export default {
 </script>
 
 <style lang="scss">
-.Room {
+.room {
   display: flex;
-  
+
   &-editors,
   &-feedback {
-    width: 48%;
+    width: 49%;
     display: inline-block;
     height: calc(100vh - 100px);
+    border: 1px solid rgba(#000, 0.12);
+  }
+  &-separator {
+    width: 2%;
   }
 }
 </style>
