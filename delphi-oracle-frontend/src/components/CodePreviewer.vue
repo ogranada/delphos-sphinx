@@ -1,11 +1,5 @@
 <template>
   <div class="CodePreviewer">
-    <!--
-    <div class="CodePreviewer-actions">
-      <div class="CodePreviewer-title">Actions</div>
-      <md-button class="md-raised md-primary" @click="runCode">Execute code</md-button>
-    </div>
-    -->
     <div class="CodePreviewer-previewContainer">
       <md-list class="md-double-line">
         <md-subheader>App</md-subheader>
@@ -16,7 +10,7 @@
       <md-subheader>Console</md-subheader>
       <div class="CodePreviewer-console"></div>
     </div>
-    <md-speed-dial class="right">
+    <md-speed-dial v-if="!hideFloatingButton" class="right">
       <md-speed-dial-target>
         <md-icon>build</md-icon>
       </md-speed-dial-target>
@@ -27,6 +21,7 @@
         </md-button>
       </md-speed-dial-content>
     </md-speed-dial>
+
     <md-snackbar
       md-position="center"
       :md-duration="5000"
@@ -46,7 +41,7 @@ import { prepareListenRunCode, sendRunCodeMessage } from "@/utils";
 
 export default {
   name: "CodePreview",
-  props: ["executeCode"],
+  props: ["getExecuteCodeAction", 'hideFloatingButton'],
   data: () => ({
     snackbarMessage: "",
     showSnackbar: false
@@ -62,6 +57,7 @@ export default {
       this.$set(this, "showSnackbar", true);
       this.runCode();
     });
+    this.getExecuteCodeAction && this.getExecuteCodeAction(this.runCodeHandler.bind(this));
   },
   computed: mapState(...["html", "css", "js"]),
   methods: {
