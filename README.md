@@ -26,7 +26,7 @@ Use a Unix based system to execute:
 # References
 
 - [Vue Material](https://vuematerial.io)
->>>>>>> master
+- [CSS Bliss](https://github.com/gilbox/css-bliss)
 
 ## NOTE:
 You can use environment variable `KEYS` to define valid admin passwords.
