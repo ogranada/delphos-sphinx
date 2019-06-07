@@ -12,7 +12,25 @@ export class MessageProcessor {
   process(connection: connection, message: any) {
     if (message.type === 'utf8') {
       const parsedMessage: IMessage = JSON.parse(message.utf8Data)
-      global.console.log('\n\nProcessing:\n', JSON.stringify(parsedMessage, null, 2))
+      global.console.log(
+        '\n\nProcessing:\n',
+        JSON.stringify(parsedMessage, null, 2)
+      )
+      if (!parsedMessage.room) {
+        connection.send(
+          JSON.stringify(<IMessage>{
+            type: message.type,
+            room: message.room,
+            payload: {
+              status: 'failure',
+              message: 'invalid room',
+            },
+          })
+        )
+        return setTimeout(() => {
+          connection.close()
+        }, 1000)
+      }
       switch (parsedMessage.type) {
         case 'subscribe':
           this.subscribe(parsedMessage, connection)
@@ -60,8 +78,14 @@ export class MessageProcessor {
     Object.assign(targetRoom.code, {
       [message.payload.language]: message.payload.code,
     })
+    let sourceCustomer: ICustomer = null
     targetRoom.connections
-      .filter((customer: ICustomer) => customer.id != message.payload.source)
+      .filter((customer: ICustomer) => {
+        if (customer.id != message.payload.source) {
+          sourceCustomer = customer
+        }
+        return customer.id != message.payload.source
+      })
       .forEach((customer: ICustomer) => {
         global.console.log(
           'Resending to customer',
@@ -75,8 +99,8 @@ export class MessageProcessor {
             type: message.type,
             room: message.room,
             payload: {
-              language: message.payload.language,
-              code: message.payload.code,
+              ...message.payload,
+              writer: sourceCustomer ? sourceCustomer.name : 'undefined',
             },
           })
         )
@@ -92,14 +116,15 @@ export class MessageProcessor {
           room: message.room,
           payload: {
             status: 'failure',
-            message: 'invalid room',
+            message: 'invalid password',
           },
         })
       )
-      setTimeout(() => {
+      return setTimeout(() => {
         connection.close()
       }, 1000)
-    } else if (targetRoom.password != message.payload.password) {
+    }
+    if (targetRoom.password != message.payload.password) {
       connection.send(
         JSON.stringify(<IMessage>{
           type: message.type,
@@ -110,7 +135,7 @@ export class MessageProcessor {
           },
         })
       )
-      setTimeout(() => {
+      return setTimeout(() => {
         connection.close()
       }, 1000)
     } else {
@@ -148,6 +173,7 @@ export class MessageProcessor {
               payload: {
                 status: 'success',
                 message: 'rejoined to room',
+                position: message.payload.position,
                 user: {
                   id: message.payload.id,
                   name,
@@ -166,6 +192,7 @@ export class MessageProcessor {
           payload: {
             status: 'success',
             message: 'joined to room',
+            position: message.payload.position,
             user: {
               id,
               name,
