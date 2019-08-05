@@ -41,7 +41,7 @@ import { prepareListenRunCode, sendRunCodeMessage } from "@/utils";
 
 export default {
   name: "CodePreview",
-  props: ["getExecuteCodeAction", 'hideFloatingButton'],
+  props: ["getExecuteCodeAction", "hideFloatingButton"],
   data: () => ({
     snackbarMessage: "",
     showSnackbar: false
@@ -57,7 +57,8 @@ export default {
       this.$set(this, "showSnackbar", true);
       this.runCode();
     });
-    this.getExecuteCodeAction && this.getExecuteCodeAction(this.runCodeHandler.bind(this));
+    this.getExecuteCodeAction &&
+      this.getExecuteCodeAction(this.runCodeHandler.bind(this));
   },
   computed: mapState(...["html", "css", "js"]),
   methods: {
@@ -68,11 +69,7 @@ export default {
         this.$store.state.user || this.$store.getters.userInfo.name
       );
       this.runCode();
-      this.$set(
-        this,
-        "snackbarMessage",
-        "Code executed by me"
-      );
+      this.$set(this, "snackbarMessage", "Code executed by me");
       this.$set(this, "showSnackbar", true);
     },
     runCode() {
@@ -159,6 +156,8 @@ export default {
 
 <style lang="scss">
 .CodePreviewer {
+  padding-bottom: 5px;
+
   &-preview,
   &-console {
     position: relative;
@@ -173,7 +172,7 @@ export default {
     min-height: 45vh;
   }
   &-console {
-    min-height: 25vh;
+    min-height: 18vh;
   }
   &-title {
     font-size: 1.3em;

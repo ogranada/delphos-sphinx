@@ -5,8 +5,6 @@ Tool to develop tech interviews.
 
 This Project use Typescript and Vue.js.
 
-<<<<<<< HEAD
-=======
 # How to run it
 
 - Run `npm i` in `delphi-oracle-backend` folder
@@ -19,19 +17,15 @@ This Project use Typescript and Vue.js.
 - To create rooms locally, the password is `admin`
 - Enjoy!
 
->>>>>>> master
 # Deploy
 
 Use a Unix based system to execute:
 ```bash
 ./deploy.sh
 ```
-<<<<<<< HEAD
-=======
 # References
 
 - [Vue Material](https://vuematerial.io)
->>>>>>> master
 
 ## NOTE:
 You can use environment variable `KEYS` to define valid admin passwords.
