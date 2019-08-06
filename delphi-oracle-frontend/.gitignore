@@ -5,6 +5,9 @@ node_modules
 # config files
 */config/skills-template.json
 
+# references files
+*/config/references
+
 # local env files
 .env.local
 .env.*.local

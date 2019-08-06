@@ -1,7 +1,7 @@
 <template>
   <md-list-item>
     <span class="md-list-item-text">{{skill.topic}}</span>
-    <star-rating v-model="rating" :item-size="15" :show-rating="false"></star-rating>
+    <star-rating v-model="skill.value" :item-size="15" :show-rating="false"></star-rating>
   </md-list-item>
 </template>
 
@@ -13,9 +13,6 @@ export default {
   components: {
     StarRating
   },
-  data: () => ({
-    rating: 0
-  }),
   props: ["skill"]
 };
 </script>

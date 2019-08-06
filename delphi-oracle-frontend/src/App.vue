@@ -6,13 +6,13 @@
           class="md-icon-button"
           @click="toggleMenu"
           :menu-visible="menuVisible"
-          v-if="!menuVisible"
+          v-if="!menuVisible && $store.state.user === 'gatekeeper'"
         >
           <md-icon>menu</md-icon>
         </md-button>
         <span class="md-title">Delphos Sphinx</span>
       </md-app-toolbar>
-      <md-app-drawer :md-active.sync="menuVisible" md-persistent="full">
+      <md-app-drawer class="DrawerContent" :md-active.sync="menuVisible" md-persistent="full">
         <md-toolbar class="md-transparent" md-elevation="0">
           <span>Skills</span>
           <div class="md-toolbar-section-end">
@@ -121,5 +121,8 @@ body {
     .monaco-list-row {
     display: none !important;
   }
+}
+.DrawerContent {
+  padding-bottom: 10px;
 }
 </style>
