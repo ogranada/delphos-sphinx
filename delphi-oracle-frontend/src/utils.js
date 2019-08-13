@@ -91,7 +91,7 @@ export function prepareWebSocket() {
   return new Promise((resolve, reject) => {
     if (window.wsConnection) {
       const ivK = setInterval(() => {
-        if (window.wsConnection.readyState) {
+        if (window.wsConnection && window.wsConnection.readyState) {
           clearInterval(ivK);
           resolve(window.wsConnection);
         }

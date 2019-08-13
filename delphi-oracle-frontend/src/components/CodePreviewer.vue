@@ -97,7 +97,13 @@ export default {
       if (this.old_js !== jsCode) {
         try {
           const customFunction = new Function(
-            `with(this) { try { ${jsCode} }catch(error){console.error(error)} } `
+            `with(this) {
+              try {
+                ${jsCode}
+              }catch(error){
+                console.error(error)
+              }
+            }`
           );
           document.querySelector(".CodePreviewer-console").innerHTML = "";
           customFunction.call(context);
@@ -114,11 +120,57 @@ export default {
       const consoleSelector = ".CodePreviewer-console";
       window.log = function() {
         const out = document.createElement("div");
-        out.innerHTML = Array.prototype.slice
+        const src_elms = {};
+        let values = Array.prototype.slice
           .call(arguments)
+          .map(element => {
+            let strVal = `${element}`;
+            switch (Object.prototype.toString.call(element)) {
+              case '[object Function]':
+                strVal = `${strVal}`.replace(/function/g, '/i/f/ei/');
+                break;
+              case '[object Array]':
+                strVal = `[${strVal}]`
+                break;
+              case '[object Object]':
+                strVal = JSON.stringify(element);
+                break;
+              default:
+                break;
+            }
+            src_elms[strVal] = element;
+            return strVal;
+          })
+        if(values.length>0 && values[0].includes('%')) {
+          const elms = values[0].match(/\%\w/g);
+          for(let i=0; i<elms.length; i++) {
+            switch (elms[i]) {
+              case '%d':
+                values[i+1] = parseInt(src_elms[values[i+1]]);
+                break;
+              case '%f':
+                values[i+1] = parseFloat(src_elms[values[i+1]]);
+                break;
+              default:
+                break;
+            }
+            if(values[i+1] !== undefined) {
+              values[0] = values[0].replace(new RegExp(elms[i]), values[i+1]);
+              values[i+1] = '<NO_USED>';
+            }
+          }
+          values = values.filter(x => x!=='<NO_USED>');
+        }
+        
+        out.innerHTML = values
           .join(" ")
+          .replace(/>/g, "&gt;")
           .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+          .replace(/ /g, "&nbsp;")
+          .replace(/\n/g, "<br/>")
+          .replace(/\/i\//g, "<i>")
+          .replace(/\/ei\//g, "</i>")
+          ;
         document.querySelector(consoleSelector).appendChild(out);
       };
       window.error = function() {
