@@ -17,16 +17,16 @@
 </template>
 
 <script>
-import { reconnect, prepareListenUpdates, sendEcho } from "@/utils.js";
+import { reconnect, prepareListenUpdates /*, sendEcho */ } from "@/utils.js";
 
 export default {
   name: "App",
   mounted() {
     document.querySelector("body").setAttribute("suggestions-muted", true);
     
-    setInterval(() => {
-      sendEcho(this.$store.state.room);
-    }, 60 * 1000);
+    // setInterval(() => {
+    //   sendEcho(this.$store.state.room);
+    // }, 60 * 1000);
 
     if (this.$route.name == "Room") {
       const room = this.$route.params.room;
@@ -53,9 +53,13 @@ export default {
           this.$store.commit("update_js", {
             code: atob(answer.payload.code.js)
           });
-          prepareListenUpdates((language, code /*, info */) => {
+          prepareListenUpdates((language, code, info) => {
             if (this.$store.state[language] != code) {
-              this.$store.commit(`update_${language}`, {code});
+              this.$store.commit(`update_${language}`, {
+                code,
+                position: info.payload.position,
+                writer: info.payload.writer
+              });
             }
           });
         })
@@ -68,6 +72,9 @@ export default {
   methods: {
     goHome() {
       this.$router.push("/");
+      Object.keys(localStorage).filter(x =>  x.includes('password') ).map(x => {
+        localStorage.removeItem(x);
+      });
     }
   }
 };

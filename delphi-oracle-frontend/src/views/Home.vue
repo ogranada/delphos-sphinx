@@ -170,9 +170,13 @@ export default {
           code: atob(answer.payload.code.css)
         });
         this.$store.commit("update_js", { code: atob(answer.payload.code.js) });
-        prepareListenUpdates((language, code /*, info */) => {
+        prepareListenUpdates((language, code, info) => {
           if (this.$store.state[language] != code) {
-            this.$store.commit(`update_${language}`, {code});
+            this.$store.commit(`update_${language}`, {
+              code,
+              position: info.payload.position,
+              writer: info.payload.writer
+            });
           }
         });
         this.$set(this, "disableJoin", false);

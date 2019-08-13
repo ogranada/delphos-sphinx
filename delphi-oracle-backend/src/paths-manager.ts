@@ -1,7 +1,6 @@
 import { Server } from 'server'
 import { Router } from 'express'
 import { IRequestAction } from 'data-interfaces'
-import { server } from 'websocket'
 
 export class PathsManager {
   server: Server
@@ -21,8 +20,7 @@ export class PathsManager {
     if (this.server) {
       this.requestActions.map((requestAction: IRequestAction) => {
         const { method, path, action } = requestAction
-        this.router[method](path, action.bind(this.server))
-        // this.router[method](path, action)
+        this.router[method](path, action.bind(this.server));
         console.log(`${method.toUpperCase()}\t::\t${path}`)
       })
       this.server.expressServer.use('', this.router)

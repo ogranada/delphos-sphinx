@@ -1,16 +1,13 @@
 import { Server as HttpServer, createServer } from 'http'
 import { join } from 'path'
+// import { writeFile, readFileSync } from 'fs'
 import { server as WsServer, connection } from 'websocket'
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
 import * as cors from 'cors'
 import { getInterfaces } from './utils'
 import { MessageProcessor } from './message-processor'
-import {
-  IServerConfig,
-  IRoom,
-  ICode,
-} from 'data-interfaces'
+import { IServerConfig, IRoom, ICode } from 'data-interfaces'
 
 export class Server {
   port: number
@@ -45,30 +42,43 @@ export class Server {
       config.pathsManager.setServer(this)
       config.pathsManager.preparePaths()
     }
+    this.roomsById = new Map()
     this.rooms = []
-    this.roomsById = new Map();
+    // try {
+    //   const _rooms = readFileSync(join(__dirname, 'storage.json')).toString()
+    //   this.rooms = JSON.parse(_rooms)
+    // } catch (error) {
+    //   console.log('Failure', error)
+    // }
   }
 
   addRoom(room: IRoom) {
     if (!room.connections) {
-      room.connections = [];
-      room.code = <ICode> {
+      room.connections = []
+      room.code = <ICode>{
         html: '',
         css: '',
-        js: ''
+        js: '',
       }
     }
-    global.console.log('Adding room ', room);
-    this.rooms.push(room);
-    this.roomsById.set(room.id, room);
+    global.console.log('Adding room ', room)
+    this.rooms.push(room)
+    // writeFile(
+    //   join(__dirname, 'storage.json'),
+    //   JSON.stringify(this.rooms),
+    //   () => {
+    //     console.log('Data saved...')
+    //   }
+    // )
+    this.roomsById.set(room.id, room)
   }
 
   getRooms() {
-    return [...this.rooms];
+    return [...this.rooms]
   }
 
   getRoomById(id: string) {
-    return this.roomsById.get(id);
+    return this.roomsById.get(id)
   }
 
   prepareWebSocketServer() {

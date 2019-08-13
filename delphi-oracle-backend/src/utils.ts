@@ -5,7 +5,7 @@ export function getInterfaces() {
   const resultIfaces: any = {}
   Object.keys(ifaces).map((ifname: string) => {
     let alias = 0
-    const w = ifaces[ifname].map((iface: NetworkInterfaceInfo) => {
+    ifaces[ifname].map((iface: NetworkInterfaceInfo) => {
       if ('IPv4' !== iface.family || iface.internal !== false) {
         return
       }

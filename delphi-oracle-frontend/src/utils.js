@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { store } from './store';
 
 const throttle = (func, limit) => {
   let lastFunc;
@@ -21,6 +22,10 @@ const throttle = (func, limit) => {
   };
 };
 
+export function setCursorLocations(cursors) {
+  store.commit('update_cursors', cursors);
+}
+
 export function getDataServer(websocket) {
   const storedInfo = localStorage.getItem('DELPHI_WS_SERVER');
   if (websocket) {
@@ -37,6 +42,7 @@ export function getDataServer(websocket) {
 export function prepareListenUpdates(action) {
   if (window.wsConnection) {
     window.wsConnection.answers.on('update_code', info => {
+      setCursorLocations(info.payload.cursors);
       const code = atob(info.payload.code);
       const language = info.payload.language;
       action && action(language, code, info);
@@ -47,6 +53,7 @@ export function prepareListenUpdates(action) {
 export function prepareListenRunCode(action) {
   if (window.wsConnection) {
     window.wsConnection.answers.on('run_code', info => {
+      setCursorLocations(info.payload.cursors);
       action && action(info);
     });
   } else {
@@ -62,8 +69,8 @@ export function sendRunCodeMessage(room, userId, userName) {
       JSON.stringify({
         type: 'run_code',
         room,
-        payload: { source: userId, name: userName }
-      })
+        payload: { source: userId, name: userName },
+      }),
     );
   }
 }
@@ -74,8 +81,8 @@ export function sendEcho(room) {
       JSON.stringify({
         type: 'echo',
         room,
-        payload: {}
-      })
+        payload: {},
+      }),
     );
   }
 }
@@ -100,7 +107,7 @@ export function prepareWebSocket() {
       // connection is opened and ready to use
       window.console.log('Connection opened.');
       const ivK = setInterval(() => {
-        if (window.wsConnection.readyState) {
+        if (window.wsConnection && window.wsConnection.readyState) {
           window.console.log('Connection ready.');
           clearInterval(ivK);
           resolve(window.wsConnection);
@@ -129,7 +136,7 @@ export function prepareWebSocket() {
         window.console.log(
           'Failure processing message:\n\t%s\n\t%s',
           message.data,
-          e.message
+          e.message,
         );
       }
     };
@@ -137,7 +144,7 @@ export function prepareWebSocket() {
   });
 }
 
-const updateCode = throttle((language, code, room, source) => {
+const updateCode = throttle((language, code, room, source, position) => {
   if (window.wsConnection) {
     window.wsConnection.send(
       JSON.stringify({
@@ -146,23 +153,24 @@ const updateCode = throttle((language, code, room, source) => {
         payload: {
           language,
           code: btoa(code),
-          source
-        }
-      })
+          source,
+          position,
+        },
+      }),
     );
   }
 }, 140); // 45 WpMin / 60 Secs / 10Char ~> 0.014 ~> 140ms
 
-export function updateHTML(html, room, source) {
-  updateCode('html', html, room, source);
+export function updateHTML(html, room, source, position) {
+  updateCode('html', html, room, source, position);
 }
 
-export function updateCSS(css, room, source) {
-  updateCode('css', css, room, source);
+export function updateCSS(css, room, source, position) {
+  updateCode('css', css, room, source, position);
 }
 
-export function updateJavascript(js, room, source) {
-  updateCode('js', js, room, source);
+export function updateJavascript(js, room, source, position) {
+  updateCode('js', js, room, source, position);
 }
 
 export function wsSubscribe(room, userName, roomPassword, userId) {
@@ -182,8 +190,8 @@ export function wsSubscribe(room, userName, roomPassword, userId) {
           payload: {
             id: userId,
             name: userName,
-            password: roomPassword
-          }
+            password: roomPassword,
+          },
         });
         window.wsConnection.send(subsMessage);
       } catch (error) {
