@@ -14,12 +14,16 @@ export default {
   name: "MonacoEditor",
   props: ["language"],
   data: () => ({
-    isCollapsed: false
+    isCollapsed: false,
+    cursorItems: {},
   }),
   computed: mapState({
     code(state) {
       const lang = this.language == "javascript" ? "js" : this.language;
       return state[lang];
+    },
+    cursors(state) {
+      return state.cursors;
     }
   }),
   watch: {
@@ -28,21 +32,96 @@ export default {
         if (this.editor) {
           const pos = this.editor.getPosition();
           this.editor.setValue(newCode);
-          this.editor.setPosition(pos);
+          // this.editor.setPosition(pos);
         }
       } else {
         this.justUpdated = false;
       }
+    },
+    cursors(newData) {
+      this.makeWidgets();
     }
   },
   mounted() {
+    this.lang = this.language == "javascript" ? "js" : this.language;
     this.container = document.querySelector(
       `.MonacoEditor[data-language="${this.language}"]`
     );
     this.editor = null;
     this.prepareEditor(this.container);
+    // todo: add cursors
+    this.makeWidgets();
   },
   methods: {
+    makeWidgets() {
+      const stylesSpan = `border: 1px solid red;
+                          position: absolute;
+                          bottom: 100%;
+                          left: 0;
+                          display: inline-block;
+                          height: 1.6em;`;
+      const styles = `padding: 0px 5px;
+                      background-color: rgba(255, 255, 255, 0.9);
+                      margin-top: 1.5em;
+                      border: 1px solid #dddbdb;
+                      border-radius: 3px;
+                      box-shadow: 0 0.05em 0.2em #000000;`;
+      const makeCursor = (name, position) => ({
+        domNode: null,
+        _position: {},
+        getId: function() {
+          return `monaco.cursor.user.${name}`;
+        },
+        getDomNode: function() {
+          if (!this.domNode) {
+            this.son = document.createElement("span");
+            this.son.setAttribute("style", stylesSpan);
+            this.domNode = document.createElement("div");
+            this.domNode.setAttribute("style", styles);
+            this.domNode.innerHTML = name;
+            this.domNode.appendChild(this.son);
+            let flag = 1;
+            this.intervalId = setInterval(() => {
+              this.son.style.visibility = flag > 0 ? "" : "hidden";
+              flag *= -1;
+            }, 500);
+          }
+          return this.domNode;
+        },
+        getPosition: function() {
+          return {
+            position: this._position,
+            preference: [
+              monaco.editor.ContentWidgetPositionPreference.EXACT,
+              monaco.editor.ContentWidgetPositionPreference.EXACT
+            ]
+          };
+        }
+      });
+      const cursors = Object.keys(this.cursors)
+        .map(index => {
+          const data = this.cursors[index];
+          return {
+            language: data.language,
+            name: data.name,
+            position: {... data.position},
+          };
+        })
+        .filter(cursor => {
+          window.console.log(cursor.language, this.lang);
+          return cursor.language === this.lang;
+        })
+        .map(cursor => {
+          console.log('Create or update cursor', cursor.name);
+          if(!this.cursorItems[cursor.name]) {
+            this.cursorItems[cursor.name] = makeCursor(cursor.name, cursor.position);
+          } else {
+            this.cursorItems[cursor.name]._position = cursor.position;
+          }
+          this.editor.addContentWidget(this.cursorItems[cursor.name]);
+        })
+        ;
+    },
     prepareEvents() {
       this.editor.onKeyUp(event => {
         if (this.content !== this.editor.getValue()) {

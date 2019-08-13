@@ -5,8 +5,10 @@ import { connection } from 'websocket'
 
 export class MessageProcessor {
   server: Server
+  cursorLocations: any
   constructor(server: Server) {
     this.server = server
+    this.cursorLocations = {} as any
   }
 
   process(connection: connection, message: any) {
@@ -47,6 +49,9 @@ export class MessageProcessor {
 
   resendRunCode(message: IMessage, connection: connection) {
     const targetRoom: IRoom = this.server.getRoomById(message.room)
+    if (!this.cursorLocations[targetRoom.id]) {
+      this.cursorLocations[targetRoom.id] = {} as any
+    }
     targetRoom.connections
       .filter((customer: ICustomer) => customer.id != message.payload.source)
       .forEach((customer: ICustomer) => {
@@ -56,12 +61,20 @@ export class MessageProcessor {
           '->',
           customer.id
         )
-
+        this.cursorLocations[targetRoom.id][customer.id] = {
+          position: message.payload.position,
+          name: customer.name,
+          language: message.payload.language,
+        }
+        global.console.log('~~>', JSON.stringify(this.cursorLocations, null, 2))
         customer.connection.send(
           JSON.stringify(<IMessage>{
             type: message.type,
             room: message.room,
-            payload: message.payload,
+            payload: {
+              ...{ ...message.payload, position: undefined },
+              cursors: this.cursorLocations[targetRoom.id],
+            },
           })
         )
       })
@@ -69,6 +82,9 @@ export class MessageProcessor {
 
   updateCode(message: IMessage, connection: connection) {
     const targetRoom: IRoom = this.server.getRoomById(message.room)
+    if (!this.cursorLocations[targetRoom.id]) {
+      this.cursorLocations[targetRoom.id] = {} as any
+    }
     if (
       (targetRoom.code as any)[message.payload.language] ===
       message.payload.code
@@ -78,33 +94,32 @@ export class MessageProcessor {
     Object.assign(targetRoom.code, {
       [message.payload.language]: message.payload.code,
     })
-    let sourceCustomer: ICustomer = null
-    targetRoom.connections
-      .filter((customer: ICustomer) => {
-        if (customer.id != message.payload.source) {
-          sourceCustomer = customer
-        }
-        return customer.id != message.payload.source
-      })
-      .forEach((customer: ICustomer) => {
-        global.console.log(
-          'Resending to customer',
-          customer.name,
-          '->',
-          customer.id
-        )
+    let sourceCustomer: ICustomer = targetRoom.connections.filter(
+      (customer: ICustomer) => customer.id === message.payload.source
+    )[0]
+    const others = targetRoom.connections.filter(
+      (customer: ICustomer) => customer.id !== sourceCustomer.id
+    )
 
-        customer.connection.send(
-          JSON.stringify(<IMessage>{
-            type: message.type,
-            room: message.room,
-            payload: {
-              ...message.payload,
-              writer: sourceCustomer ? sourceCustomer.name : 'undefined',
-            },
-          })
-        )
-      })
+    this.cursorLocations[targetRoom.id][sourceCustomer.id] = {
+      position: message.payload.position,
+      name: sourceCustomer.name,
+      language: message.payload.language,
+    }
+
+    others.forEach((customer: ICustomer) => {
+      customer.connection.send(
+        JSON.stringify(<IMessage>{
+          type: message.type,
+          room: message.room,
+          payload: {
+            ...{ ...message.payload, position: undefined },
+            cursors: this.cursorLocations[targetRoom.id],
+            writer: sourceCustomer ? sourceCustomer.name : 'undefined',
+          },
+        })
+      )
+    })
   }
 
   subscribe(message: IMessage, connection: connection) {

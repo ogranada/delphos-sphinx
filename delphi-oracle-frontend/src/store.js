@@ -1,7 +1,7 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex from 'vuex';
 
-import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from "@/utils";
+import { wsSubscribe, updateHTML, updateCSS, updateJavascript } from '@/utils';
 
 Vue.use(Vuex);
 
@@ -11,22 +11,23 @@ export const store = new Vuex.Store({
     id: null,
     user: null,
     password: null,
-    html: "",
-    css: "",
-    js: "",
-    writers: {}
+    html: '',
+    css: '',
+    js: '',
+    writers: {},
+    cursors: {},
   },
   getters: {
     password(state) {
       return localStorage.getItem(`${state.room}:password`);
     },
     userInfo() {
-      return JSON.parse(localStorage.getItem("USER_INFO")) || {};
-    }
+      return JSON.parse(localStorage.getItem('USER_INFO')) || {};
+    },
   },
   mutations: {
     update_userInfo(state, userData) {
-      localStorage.setItem("USER_INFO", JSON.stringify(userData));
+      localStorage.setItem('USER_INFO', JSON.stringify(userData));
       state.id = userData.id;
       state.user = userData.user;
     },
@@ -47,7 +48,7 @@ export const store = new Vuex.Store({
       const html = code;
       if (state.html !== html) {
         state.html = html;
-        if (writer !== "undefined") {
+        if (writer !== undefined) {
           state.writers[writer] = position;
         }
         if (source) {
@@ -59,7 +60,7 @@ export const store = new Vuex.Store({
       const css = code;
       if (state.css !== css) {
         state.css = css;
-        if (writer !== "undefined") {
+        if (writer !== 'undefined') {
           state.writers[writer] = position;
         }
         if (source) {
@@ -71,14 +72,19 @@ export const store = new Vuex.Store({
       const js = code;
       if (state.js !== js) {
         state.js = js;
-        if (writer !== "undefined") {
+        if (writer !== 'undefined') {
           state.writers[writer] = position;
         }
         if (source) {
           updateJavascript(js, state.room, state.id, position);
         }
       }
-    }
+    },
+    update_cursors(state, cursors) {
+      state.cursors = Object.values(cursors).filter(
+        elm => elm.name !== state.user,
+      );
+    },
   },
   actions: {
     register(context) {
@@ -86,8 +92,8 @@ export const store = new Vuex.Store({
         context.state.room,
         context.state.user,
         context.state.password,
-        context.state.id
+        context.state.id,
       );
-    }
-  }
+    },
+  },
 });

@@ -17,16 +17,16 @@
 </template>
 
 <script>
-import { reconnect, prepareListenUpdates, sendEcho } from "@/utils.js";
+import { reconnect, prepareListenUpdates /*, sendEcho */ } from "@/utils.js";
 
 export default {
   name: "App",
   mounted() {
     document.querySelector("body").setAttribute("suggestions-muted", true);
     
-    setInterval(() => {
-      sendEcho(this.$store.state.room);
-    }, 60 * 1000);
+    // setInterval(() => {
+    //   sendEcho(this.$store.state.room);
+    // }, 60 * 1000);
 
     if (this.$route.name == "Room") {
       const room = this.$route.params.room;
@@ -72,6 +72,9 @@ export default {
   methods: {
     goHome() {
       this.$router.push("/");
+      Object.keys(localStorage).filter(x =>  x.includes('password') ).map(x => {
+        localStorage.removeItem(x);
+      });
     }
   }
 };
