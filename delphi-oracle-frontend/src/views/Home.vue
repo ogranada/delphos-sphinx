@@ -33,7 +33,7 @@
     <md-card md-with-hover>
       <md-ripple>
         <md-card-header>
-          <div class="md-title">Joint to Room</div>
+          <div class="md-title">Join to Room</div>
           <div class="md-subhead">And show us what you got!</div>
         </md-card-header>
 

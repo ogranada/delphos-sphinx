@@ -19,10 +19,10 @@ if [ $? -eq 0 ]; then
     else
         heroku git:clone -a $PROJECT
     fi
-    echo "Building front-end prpject..."
+    echo "Building front-end project..."
     cd delphi-oracle-frontend
     npm run build
-    echo "Building back-end prpject..."
+    echo "Building back-end project..."
     cd ..
     cd delphi-oracle-backend
     npm run prepare-deploy
@@ -31,9 +31,11 @@ if [ $? -eq 0 ]; then
     cp -rf delphi-oracle-backend/dist/* $PROJECT
     cp -rf delphi-oracle-backend/package*.json $PROJECT
     cp -rf delphi-oracle-frontend/dist $PROJECT/public
+    echo "cd $PROJECT"
     cd $PROJECT
     git add .
-    git commit -m $(node -e "var x=require('./package.json');console.log('Deployed version '+x.version)")
+    msg="$(node -e "var x=require('./package.json');console.log('Deployed version '+x.version)")"
+    git commit -m "$msg"
     git push heroku master
     exit 0;
 else
