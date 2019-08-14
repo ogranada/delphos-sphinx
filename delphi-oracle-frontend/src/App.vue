@@ -37,12 +37,13 @@
 
 <script>
 import { reconnect, prepareListenUpdates /*, sendEcho */ } from "@/utils.js";
+import MenuBox from "@/components/MenuBox.vue";
 
 export default {
   name: "App",
   mounted() {
     document.querySelector("body").setAttribute("suggestions-muted", true);
-    
+
     // setInterval(() => {
     //   sendEcho(this.$store.state.room);
     // }, 60 * 1000);
@@ -97,9 +98,11 @@ export default {
   methods: {
     goHome() {
       this.$router.push("/");
-      Object.keys(localStorage).filter(x =>  x.includes('password') ).map(x => {
-        localStorage.removeItem(x);
-      });
+      Object.keys(localStorage)
+        .filter(x => x.includes("password"))
+        .map(x => {
+          localStorage.removeItem(x);
+        });
     },
     toggleMenu() {
       this.menuVisible = !this.menuVisible;

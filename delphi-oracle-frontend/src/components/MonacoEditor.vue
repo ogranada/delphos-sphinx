@@ -6,6 +6,7 @@
 
 <script>
 /* global monaco */
+/* eslint-disable no-console */
 
 import { mapState } from "vuex";
 import enableEmmet from "monaco-emmet";
@@ -15,7 +16,7 @@ export default {
   props: ["language"],
   data: () => ({
     isCollapsed: false,
-    cursorItems: {},
+    cursorItems: {}
   }),
   computed: mapState({
     code(state) {
@@ -30,7 +31,7 @@ export default {
     code(newCode /*, oldCode */) {
       if (!this.justUpdated) {
         if (this.editor) {
-          const pos = this.editor.getPosition();
+          this.editor.getPosition();
           this.editor.setValue(newCode);
           // this.editor.setPosition(pos);
         }
@@ -38,7 +39,7 @@ export default {
         this.justUpdated = false;
       }
     },
-    cursors(newData) {
+    cursors() {
       this.makeWidgets();
     }
   },
@@ -66,7 +67,7 @@ export default {
                       border: 1px solid #dddbdb;
                       border-radius: 3px;
                       box-shadow: 0 0.05em 0.2em #000000;`;
-      const makeCursor = (name, position) => ({
+      const makeCursor = name => ({
         domNode: null,
         _position: {},
         getId: function() {
@@ -98,13 +99,14 @@ export default {
           };
         }
       });
-      const cursors = Object.keys(this.cursors)
+
+      Object.keys(this.cursors)
         .map(index => {
           const data = this.cursors[index];
           return {
             language: data.language,
             name: data.name,
-            position: {... data.position},
+            position: { ...data.position }
           };
         })
         .filter(cursor => {
@@ -112,15 +114,17 @@ export default {
           return cursor.language === this.lang;
         })
         .map(cursor => {
-          console.log('Create or update cursor', cursor.name);
-          if(!this.cursorItems[cursor.name]) {
-            this.cursorItems[cursor.name] = makeCursor(cursor.name, cursor.position);
+          console.log("Create or update cursor", cursor.name);
+          if (!this.cursorItems[cursor.name]) {
+            this.cursorItems[cursor.name] = makeCursor(
+              cursor.name,
+              cursor.position
+            );
           } else {
             this.cursorItems[cursor.name]._position = cursor.position;
           }
           this.editor.addContentWidget(this.cursorItems[cursor.name]);
-        })
-        ;
+        });
     },
     prepareEvents() {
       this.editor.onKeyUp(event => {

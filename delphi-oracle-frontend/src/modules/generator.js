@@ -8,34 +8,44 @@ const getReferences = () => {
             english: require('../config/references/english.json'),
             seniorities: require('../config/references/seniorities.json'),
             answer: require('../config/references/ans_template.json'),
-            generator: require('../config/references/generator.json')
+            calculator: require('../config/references/generator.json')
         }
     } catch (err) {
         console.log(err);
     }
 };
 
-const SRTY_MSG = (s, sug) =>
-    `${generator['seniority-result']} ${s}. ${
-    sug && !sug.includes(s) ? `${sug}` : ''
-    }`;
+const capitalize = (s) => {
+    if (typeof s !== 'string') return ''
+    return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
-const random = options => {
+const SRTY_MSG = (s, sug) => {
+    const { calculator } = getReferences();
+    return `${calculator['seniority-result']} ${s}. ${
+        sug && !sug.includes(s) ? `${sug}` : ''
+        }`;
+}
+
+const random = (options = []) => {
     const pos = parseInt(Math.random() * options.length - 1, 10);
     return options[pos];
 };
 
 const assembleSentence = (name, topic, level, dict) => {
-    const about = random(generator['about-sentences']);
-    const knows = generator['knowledge-levels'][level];
-    const complement = generator['complement-levels'][level];
+    const { calculator } = getReferences();
+    const about = random(calculator['about-sentences']);
+    const knows = calculator['knowledge-levels'][level];
+    const complement = calculator['complement-levels'][level];
     const _topics = topic.split(',');
-    const plurality = _topics.length === 1 ? generator['plurality'][0] : generator['plurality'][1];
+    const plurality = _topics.length === 1 ? calculator['plurality'][0] : calculator['plurality'][1];
     const t_topics = _topics.map(x => dict[x.trim()] || x).join(', ');
     return `${name} ${knows} ${about} ${t_topics}${complement}${plurality}`;
 };
 
 const analizeTopics = (candidate, topics, dict) => {
+    const { calculator } = getReferences();
+
     topics.sort((a, b) => b.value - a.value);
     const resumeItems = topics
         .reduce((acc, el) => {
@@ -46,29 +56,38 @@ const analizeTopics = (candidate, topics, dict) => {
             acc[el.value].push(txt);
             return acc;
         }, [])
-        .map(elms => elms.join(', '));
+        .map(elms => elms.join(','));
     const resumes = [];
     const skills = {
         strength: '',
         weakness: '',
     };
 
-    for (let index = 0; index <= generator['possivle-values']; index++) {
+    for (let index = 0; index <= calculator['possible-values']; index++) {
         const topic = resumeItems[index];
         resumes[index] = topic
             ? assembleSentence(candidate, topic, index, dict)
             : '';
     }
-    skills.weakness = [resumes[1], resumes[2]]
+
+    skills.weakness = [capitalize(resumes[1].trim()), capitalize(resumes[2].trim())]
         .filter(x => x)
-        .join(', ' + random(generator['also-sencences']) + ' ');
-    skills.strength = [resumes[3], resumes[4], resumes[5]]
+        .join(' <enter> ');
+    skills.strength = [capitalize(resumes[3].trim()), capitalize(resumes[4].trim()), capitalize(resumes[5].trim())]
         .filter(x => x)
-        .join(', ' + random(generator['also-sencences']) + ' ');
+        .join(' <enter> ');
+    skills.summary = [resumes[3], resumes[4], resumes[5]]
+        .filter(x => x)
+        .join(', ' + random(calculator['also-sencences']) + ' ')
+        + ' <enter> ' +
+        [resumes[1], resumes[2]]
+            .filter(x => x)
+            .join(', ' + random(calculator['also-sencences']) + ' ');
     return skills;
 };
 
 const getSkillsForCatTopic = (categoryValue, topicValue, value, skills) => {
+    const { calculator } = getReferences();
     const topic = topicValue.toLowerCase();
 
     return skills
@@ -87,12 +106,12 @@ const getSkillsForCatTopic = (categoryValue, topicValue, value, skills) => {
         .map(skill => ({
             id: skill.id,
             name: skill.name,
-            weight: generator['skill-values'][value],
+            weight: calculator['skill-values'][value],
         }));
 }
 
 const generateJSON = (inputFile) => {
-    const { answer, skills, experience, english, seniorities } = getReferences();
+    const { answer, skills, experience, english, seniorities, calculator } = getReferences();
     const allData = inputFile;
     const data = allData.technical;
     const personalData = allData.personal;
@@ -100,6 +119,7 @@ const generateJSON = (inputFile) => {
     let _answer = { ...answer };
     const strengths = [];
     const weaknesses = [];
+    const summary = [];
     const scores = [];
     Object.keys(data).forEach(category => {
         const children = data[category];
@@ -112,6 +132,7 @@ const generateJSON = (inputFile) => {
             );
             weaknesses.push(topics.weakness);
             strengths.push(topics.strength);
+            summary.push(topics.summary);
         }
         const validChildren = children.filter(item => item.value > 0);
         validChildren.forEach(element => {
@@ -140,7 +161,7 @@ const generateJSON = (inputFile) => {
     });
     const scoresAvg = scores.length > 0 && scores.reduce((acc, val) => acc + val) / scores.length;
     let assigned_seniority = null;
-    generator['seniority-ranges'].forEach(srty => {
+    calculator['seniority-ranges'].forEach(srty => {
         if (srty.min <= scoresAvg && scoresAvg <= srty.max) {
             assigned_seniority = srty.value;
         }
@@ -153,6 +174,10 @@ const generateJSON = (inputFile) => {
     _answer.strengthSkillsComments = strengths
         .filter(x => x)
         .join('.\n')
+        .replace(/\.\./g, '.');
+    _answer.overallComments = summary
+        .filter(x => x)
+        .join('')
         .replace(/\.\./g, '.');
     // experience
     const exp = experience.filter(
@@ -188,10 +213,10 @@ const generateJSON = (inputFile) => {
     _answer.fitPosition = true;
     _answer.fitCompanyValue = true;
     _answer.evaluationResultComments = SRTY_MSG(
-        generator['seniority-long'][seniority.name],
+        calculator['seniority-long'][seniority.name],
         personalData.evaluationResultComments,
     );
-    _answer.overallComments = personalData.overallComments;
+
     _answer.technicalEnglishLevelComments = personalData.englishComments;
     _answer.interviewId = personalData.interviewId || -1;
     _answer.suggestedStudioId = 57202775;
@@ -204,7 +229,7 @@ const generateJSON = (inputFile) => {
             return {
                 id: skill.id,
                 name: skill.name,
-                weight: generator['skill-values'][gskill.value],
+                weight: calculator['skill-values'][gskill.value],
             };
         }),
     );

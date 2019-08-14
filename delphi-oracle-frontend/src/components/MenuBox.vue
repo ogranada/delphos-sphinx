@@ -42,6 +42,7 @@ export default {
     translation
   }),
   mounted() {
+    /* eslint-disable no-console */
     console.log(this.$route);
     console.log(this.$store);
   },
