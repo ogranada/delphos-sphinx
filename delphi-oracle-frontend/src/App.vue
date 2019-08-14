@@ -2,15 +2,34 @@
   <div id="app">
     <md-app>
       <md-app-toolbar class="md-primary">
-        <span class="md-title">Delphi Sphinx</span>
+        <md-button
+          class="md-icon-button"
+          @click="toggleMenu"
+          :menu-visible="menuVisible"
+          v-if="!menuVisible && $store.state.user === 'gatekeeper'"
+        >
+          <md-icon>menu</md-icon>
+        </md-button>
+        <span class="md-title">Delphos Sphinx</span>
       </md-app-toolbar>
+      <md-app-drawer class="DrawerContent" :md-active.sync="menuVisible" md-persistent="full">
+        <md-toolbar class="md-transparent" md-elevation="0">
+          <span>Skills</span>
+          <div class="md-toolbar-section-end">
+            <md-button class="md-icon-button md-dense" @click="toggleMenu">
+              <md-icon>keyboard_arrow_left</md-icon>
+            </md-button>
+          </div>
+        </md-toolbar>
 
+        <menu-box></menu-box>
+      </md-app-drawer>
       <md-app-content>
         <div id="nav">
           <router-link to="/"></router-link>
           <router-link to="/about"></router-link>
         </div>
-        <router-view/>
+        <router-view />
       </md-app-content>
     </md-app>
   </div>
@@ -69,12 +88,21 @@ export default {
         });
     }
   },
+  components: {
+    MenuBox
+  },
+  data: () => ({
+    menuVisible: false
+  }),
   methods: {
     goHome() {
       this.$router.push("/");
       Object.keys(localStorage).filter(x =>  x.includes('password') ).map(x => {
         localStorage.removeItem(x);
       });
+    },
+    toggleMenu() {
+      this.menuVisible = !this.menuVisible;
     }
   }
 };
@@ -95,5 +123,8 @@ body {
     .monaco-list-row {
     display: none !important;
   }
+}
+.DrawerContent {
+  padding-bottom: 10px;
 }
 </style>

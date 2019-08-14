@@ -1,0 +1,18 @@
+{
+  "personal": {
+    "skills": [
+      {
+        "value": 0,
+        "topic": "my personal skill"
+      }
+    ]
+  },
+  "technical": {
+    "html": [
+      {
+        "value": 0,
+        "topic": "my technical skill"
+      }
+    ]
+  }
+}

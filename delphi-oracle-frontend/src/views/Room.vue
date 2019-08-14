@@ -4,22 +4,13 @@
       <md-toolbar :md-elevation="1">
         <span class="md-title">Coding</span>
         <div class="md-toolbar-section-end">
-          <md-menu md-size="small" md-direction="bottom-end" md-align-trigger>
-            <md-button class="md-icon-button" md-menu-trigger>
-              <md-icon>more_vert</md-icon>
-            </md-button>
-            <md-menu-content>
-              <md-menu-item @click="runCode">
-                Run Code
-                <md-icon>play_arrow</md-icon>
-              </md-menu-item>
-              <md-menu-item @click="togglePreview">
-                Toggle Results Panel
-                <md-icon v-if="isPreviewOpen">toggle_on</md-icon>
-                <md-icon v-if="!isPreviewOpen">toggle_off</md-icon>
-              </md-menu-item>
-            </md-menu-content>
-          </md-menu>
+          <md-button title="Run Code" class="md-icon-button" @click="runCode">
+            <md-icon>play_arrow</md-icon>
+          </md-button>
+          <md-button title="Toggle Results Panel" class="md-icon-button" @click="togglePreview">
+            <md-icon v-if="isPreviewOpen">toggle_on</md-icon>
+            <md-icon v-if="!isPreviewOpen">toggle_off</md-icon>
+          </md-button>
         </div>
       </md-toolbar>
       <md-tabs md-sync-route>
@@ -109,7 +100,6 @@ export default {
   &-editors,
   &-feedback {
     display: inline-block;
-    height: calc(100vh - 100px);
     border: 1px solid rgba(#000, 0.12);
     transition: all 0.5s ease;
     z-index: 3000;
@@ -126,7 +116,6 @@ export default {
     position: absolute;
     top: 0;
     right: 0;
-    height: calc(100vh - 6em);
     transform: rotateY(-90deg);
     transform-origin: right;
     min-width: 40%;

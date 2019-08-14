@@ -7,6 +7,7 @@ import {
   MdButton,
   MdCard,
   MdContent,
+  MdDrawer,
   MdField,
   MdList,
   MdMenu,
@@ -30,6 +31,7 @@ Vue.use(MdApp);
 Vue.use(MdButton);
 Vue.use(MdCard);
 Vue.use(MdContent);
+Vue.use(MdDrawer);
 Vue.use(MdField);
 Vue.use(MdList);
 Vue.use(MdMenu);

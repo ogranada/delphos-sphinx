@@ -205,10 +205,10 @@ export default {
 
 <style lang="scss">
 .MonacoEditor {
-  height: calc(72vh - 3px);
+  height: calc(70vh - 3px);
   width: calc(100% - 1px);
   &-container {
-    min-height: 72vh;
+    min-height: 70vh;
     margin: 5px 0;
   }
 
