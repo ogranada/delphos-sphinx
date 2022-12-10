@@ -26,7 +26,7 @@
     "@types/websocket": "0.0.40",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "memfs": "^2.15.2",
     "uuid": "^3.3.2",
     "websocket": "^1.0.28"
